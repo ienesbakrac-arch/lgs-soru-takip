@@ -1,42 +1,49 @@
 "use client";
-
 import { useState, useEffect } from "react";
 
 export default function HaftalikHedef() {
-  const [toplamCozulen, setToplamCozulen] = useState(0);
-  const [hedef, setHedef] = useState(1000);
+  const [hedef, setHedef] = useState("100");
+  const [kaydedildi, setKaydedildi] = useState(false);
 
   useEffect(() => {
-    const kayitliHaftalik = localStorage.getItem("haftalikToplam");
-    if (kayitliHaftalik) {
-      setToplamCozulen(Number(kayitliHaftalik));
+    const kayitliHedef = localStorage.getItem("lgs_haftalik_hedef");
+    if (kayitliHedef) {
+      setHedef(kayitliHedef);
     }
   }, []);
 
-  const yuzde = Math.min(Math.round((toplamCozulen / hedef) * 100), 100);
+  const handleKaydet = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem("lgs_haftalik_hedef", hedef);
+    setKaydedildi(true);
+    setTimeout(() => setKaydedildi(false), 3000);
+  };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "8px" }}>🎯 Haftalık Hedef Durumu</h1>
-      <p style={{ fontSize: "14px", opacity: 0.8, marginBottom: "20px" }}>
-        Haftalık hedeflerine ne kadar yaklaştığını takip et.
-      </p>
+    <div style={{ color: "#f8fafc", maxWidth: "600px" }}>
+      <h1 style={{ fontSize: "24px", marginBottom: "8px" }}>🎯 Haftalık Soru Hedefi</h1>
+      <p style={{ color: "#94a3b8", marginBottom: "24px" }}>Bu hafta çözmek istediğin soru sayısını kendin belirle ve hedefine odaklan!</p>
 
-      <div style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border-color)", padding: "24px", borderRadius: "12px", marginBottom: "20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-          <span style={{ fontWeight: "bold", fontSize: "16px" }}>Genel Hedef İlerlemesi</span>
-          <span style={{ fontWeight: "bold", fontSize: "18px", color: "#2563eb" }}>%{yuzde}</span>
+      {kaydedildi && (
+        <div style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", border: "1px solid #22c55e", padding: "12px", borderRadius: "8px", color: "#4ade80", marginBottom: "20px" }}>
+          ✅ Haftalık hedefin başarıyla kaydedildi!
         </div>
+      )}
 
-        {/* İlerleme Çubuğu */}
-        <div style={{ width: "100%", backgroundColor: "var(--bg-primary)", height: "16px", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--border-color)" }}>
-          <div style={{ width: `${yuzde}%`, backgroundColor: "#2563eb", height: "100%", transition: "width 0.3s ease" }}></div>
-        </div>
-
-        <p style={{ marginTop: "12px", fontSize: "14px", opacity: 0.8 }}>
-          Hedeflenen: <strong>{hedef} Soru</strong> | Çözülen: <strong>{toplamCozulen} Soru</strong>
-        </p>
-      </div>
+      <form onSubmit={handleKaydet} style={{ backgroundColor: "#111827", padding: "24px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: 500 }}>
+          Bu Hafta Çözmeyi Hedeflediğin Soru Sayısı:
+        </label>
+        <input 
+          type="number" 
+          value={hedef} 
+          onChange={(e) => setHedef(e.target.value)} 
+          style={{ width: "100%", padding: "12px", borderRadius: "8px", backgroundColor: "#1f2937", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: "16px", marginBottom: "20px", boxSizing: "border-box" }}
+        />
+        <button type="submit" style={{ backgroundColor: "#2563eb", color: "#fff", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", width: "100%" }}>
+          Hedefi Kaydet
+        </button>
+      </form>
     </div>
   );
 }

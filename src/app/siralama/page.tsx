@@ -2,50 +2,98 @@
 import { useState, useEffect } from "react";
 
 export default function Siralama() {
-  const [kullaniciAdi, setKullaniciAdi] = useState("Sen (Öğrenci)");
+  const [kullaniciAdi, setKullaniciAdi] = useState("Öğrenci");
   const [cozulenSoru, setCozulenSoru] = useState(0);
+  const [isimDegistiriliyor, setIsimDegistiriliyor] = useState(false);
+  const [yeniIsimInput, setYeniIsimInput] = useState("");
 
   useEffect(() => {
-    // Daha önce yanlışlarim veya denemeler sayfasından girilen soru verilerini okuyalım
+    // 1. Kullanıcı adını localStorage'dan al, yoksa sor
+    const kayitliAd = localStorage.getItem("lgs_kullanici_adi");
+    if (kayitliAd) {
+      setKullaniciAdi(kayitliAd);
+      setYeniIsimInput(kayitliAd);
+    } else {
+      setKullaniciAdi("LGS Öğrencisi");
+      setYeniIsimInput("LGS Öğrencisi");
+    }
+
+    // 2. Yanlışlar veya kaydedilen sorulardan toplam soru sayısını hesapla
     const kaydedilenYanlislar = localStorage.getItem("lgs_yanlislar");
-    let soruSayisi = 0;
+    let toplamSoru = 5; // Başlangıç tabanı
     
     if (kaydedilenYanlislar) {
       try {
         const parsed = JSON.parse(kaydedilenYanlislar);
         if (Array.isArray(parsed)) {
-          soruSayisi = parsed.length * 5; // Her kayıtlı soru için tahmini bir soru havuzu katsayısı
+          toplamSoru = parsed.length * 10; // Her eklenen soru/yanlış için puan katsayısı
         }
       } catch (e) {
         console.error(e);
       }
     }
-
-    // Eğer hiç soru girilmediyse bile en azından kullanıcının listede görünmesi için tabanı 1 yapalım veya localStorage'dan okuyalım
-    const toplamSoru = Math.max(soruSayisi, 12); // Bir soru bile girilse dinamik artar
-    setCozulenSoru(toplamSoru);
+    setCozulenSoru(Math.max(toplamSoru, 10));
   }, []);
 
-  // İlk 10 sıralama listesi (Gerçekçi LGS hedefleriyle uyumlu çalışma arkadaşları)
+  const isimKaydet = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (yeniIsimInput.trim()) {
+      localStorage.setItem("lgs_kullanici_adi", yeniIsimInput.trim());
+      setKullaniciAdi(yeniIsimInput.trim());
+      setIsimDegistiriliyor(false);
+    }
+  };
+
+  // Liderlik tablosu listesi (Senin puanına göre otomatik sıralanır)
   const ogrenciler = [
-    { sira: 1, isim: "Zeynep Kaya (Fen Lisesi Hedef)", soru: 540, puan: 990 },
-    { sira: 2, isim: "Ahmet Yılmaz (Sen)", soru: cozulenSoru * 15, puan: cozulenSoru * 25 },
-    { sira: 3, isim: "Mehmet Demir", soru: 480, puan: 940 },
-    { sira: 4, isim: "Elif Şahin", soru: 450, puan: 890 },
-    { sira: 5, isim: "Mustafa Aydın", soru: 410, puan: 820 },
-    { sira: 6, isim: "Ayşe Çelik", soru: 380, puan: 760 },
-    { sira: 7, isim: "Yusuf Koç", soru: 340, puan: 700 },
-    { sira: 8, isim: "İrem Yıldız", soru: 310, puan: 650 },
-    { sira: 9, isim: "Emre Arslan", soru: 280, puan: 590 },
-    { sira: 10, isim: "Betül Öztürk", soru: 250, puan: 530 },
-  ].sort((a, b) => b.puan - a.puan); // Puana göre otomatik büyükten küçüğe sıralanır
+    { isim: "Zeynep Kaya", soru: 540, puan: 990 },
+    { isim: kullniciAdiKontrol(kullaniciAdi), soru: cozulenSoru, puan: cozulenSoru * 3 + 100 },
+    { isim: "Mehmet Demir", soru: 480, puan: 940 },
+    { isim: "Elif Şahin", soru: 450, puan: 890 },
+    { isim: "Mustafa Aydın", soru: 410, puan: 820 },
+    { isim: "Ayşe Çelik", soru: 380, puan: 760 },
+    { isim: "Yusuf Koç", soru: 340, puan: 700 },
+    { isim: "İrem Yıldız", soru: 310, puan: 650 },
+    { isim: "Emre Arslan", soru: 280, puan: 590 },
+    { isim: "Betül Öztürk", soru: 250, puan: 530 },
+  ].sort((a, b) => b.puan - a.puan); // Puana göre büyükten küçüğe sırala
+
+  function kullniciAdiKontrol(ad: string) {
+    return `${ad} (Sen)`;
+  }
 
   return (
     <div style={{ color: "#f8fafc", maxWidth: "900px" }}>
-      <h1 style={{ fontSize: "24px", marginBottom: "8px" }}>🥇 LGS İlk 10 Liderlik Tablosu</h1>
-      <p style={{ color: "#94a3b8", marginBottom: "24px" }}>
-        Uygulamaya girdiğin sorular ve çözümler doğrudan puanını belirler. Zirveye yerleşmek için soru çözmeye devam et!
-      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+        <div>
+          <h1 style={{ fontSize: "24px", margin: "0 0 4px 0" }}>🥇 Liderlik Sıralaması</h1>
+          <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Soru çözdükçe puanın artar ve tabloda yükselirsin!</p>
+        </div>
+        
+        {/* İsim Değiştirme Alanı */}
+        <div>
+          {!isimDegistiriliyor ? (
+            <button 
+              onClick={() => setIsimDegistiriliyor(true)}
+              style={{ backgroundColor: "#1f2937", color: "#60a5fa", border: "1px solid rgba(255,255,255,0.1)", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}
+            >
+              ✏️ Adımı Düzenle: {kullaniciAdi}
+            </button>
+          ) : (
+            <form onSubmit={isimKaydet} style={{ display: "flex", gap: "6px" }}>
+              <input 
+                type="text" 
+                value={yeniIsimInput} 
+                onChange={(e) => setYeniIsimInput(e.target.value)}
+                style={{ padding: "6px 10px", borderRadius: "6px", backgroundColor: "#1f2937", border: "1px solid #3b82f6", color: "#fff", fontSize: "13px" }}
+                placeholder="Adınızı girin"
+                autoFocus
+              />
+              <button type="submit" style={{ backgroundColor: "#2563eb", color: "#fff", border: "none", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}>Kaydet</button>
+            </form>
+          )}
+        </div>
+      </div>
 
       <div style={{ backgroundColor: "#111827", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>

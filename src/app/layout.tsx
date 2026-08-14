@@ -16,15 +16,17 @@ export default function RootLayout({
     gap: "10px",
     fontSize: "13.5px",
     fontWeight: 500,
+    whiteSpace: "nowrap",
   };
 
   return (
     <html lang="tr">
       <body style={{ margin: 0, padding: 0, fontFamily: "sans-serif", backgroundColor: "var(--bg-primary)" }}>
-        <div style={{ display: "flex", minHeight: "100vh" }}>
+        <div className="layout-container" style={{ display: "flex", minHeight: "100vh" }}>
           
           {/* SOL PANEL (SIDEBAR) */}
           <aside
+            className="sidebar"
             style={{
               width: "250px",
               backgroundColor: "#0f172a",
@@ -64,14 +66,14 @@ export default function RootLayout({
             </div>
 
             {/* LGS GERİ SAYIM KARTI */}
-            <div style={{ backgroundColor: "rgba(37, 99, 235, 0.15)", border: "1px solid rgba(37, 99, 235, 0.3)", padding: "12px", borderRadius: "10px", textAlign: "center" }}>
+            <div className="sidebar-footer" style={{ backgroundColor: "rgba(37, 99, 235, 0.15)", border: "1px solid rgba(37, 99, 235, 0.3)", padding: "12px", borderRadius: "10px", textAlign: "center" }}>
               <span style={{ fontSize: "11px", color: "#93c5fd", fontWeight: 700, display: "block", marginBottom: "4px" }}>🎯 LGS SINAVI</span>
               <span style={{ fontSize: "13px", fontWeight: "bold", color: "#ffffff" }}>Hedefe Odaklan! 💪</span>
             </div>
           </aside>
 
           {/* SAĞ İÇERİK ALANI */}
-          <main style={{ flex: 1, padding: "28px", boxSizing: "border-box" }}>
+          <main style={{ flex: 1, padding: "28px", boxSizing: "border-box", width: "100%", overflowX: "hidden" }}>
             {children}
           </main>
 

@@ -1,31 +1,29 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
-  --bg-primary: #f8fafc;
-  --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --border-color: #cbd5e1;
-  --header-bg: #ffffff;
+  --bg-primary: #090d16;
+  --bg-card: #111827;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme='dark'] {
-  --bg-primary: #0b132b;
-  --bg-card: #1c2541;
-  --text-primary: #ffffff;
-  --text-secondary: #cbd5e1;
-  --border-color: #334155;
-  --header-bg: #1c2541;
-}
-
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-h1, h2, h3, h4, h5, h6, label {
-  color: var(--text-primary) !important;
+/* Telefonlar için duyarlı tasarım (Responsive) */
+@media (max-width: 768px) {
+  .layout-container {
+    flex-direction: column !important;
+  }
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    padding: 10px !important;
+    gap: 15px;
+  }
+  .sidebar nav {
+    flex-direction: row !important;
+    overflow-x: auto;
+  }
+  .sidebar-footer {
+    display: none !important; /* Telefonda yer kaplamaması için alt kart gizlenir */
+  }
 }

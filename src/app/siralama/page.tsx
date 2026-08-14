@@ -1,41 +1,49 @@
 "use client";
+import { useState, useEffect } from "react";
 
-export default function Siralama() {
-  const ogrenciler = [
-    { sira: 1, isim: "Ahmet Y. (Sen)", soru: 450, puan: 980 },
-    { sira: 2, isim: "Zeynep K.", soru: 420, puan: 920 },
-    { sira: 3, isim: "Mehmet D.", soru: 390, puan: 880 },
-    { sira: 4, isim: "Elif S.", soru: 350, puan: 790 },
-    { sira: 5, isim: "Mustafa A.", soru: 310, puan: 710 },
-  ];
+export default function HaftalikHedef() {
+  const [hedef, setHedef] = useState("100");
+  const [kaydedildi, setKaydedildi] = useState(false);
+
+  useEffect(() => {
+    const kayitliHedef = localStorage.getItem("lgs_haftalik_hedef");
+    if (kayitliHedef) {
+      setHedef(kayitliHedef);
+    }
+  }, []);
+
+  const handleKaydet = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem("lgs_haftalik_hedef", hedef);
+    setKaydedildi(true);
+    setTimeout(() => setKaydedildi(false), 3000);
+  };
 
   return (
-    <div style={{ color: "#f8fafc", maxWidth: "800px" }}>
-      <h1 style={{ fontSize: "24px", marginBottom: "8px" }}>🥇 Liderlik Sıralaması</h1>
-      <p style={{ color: "#94a3b8", marginBottom: "24px" }}>LGS hazırlık sürecindeki diğer öğrencilerle yarış ve zirveye yerleş!</p>
+    <div style={{ color: "#f8fafc", maxWidth: "600px" }}>
+      <h1 style={{ fontSize: "24px", marginBottom: "8px" }}>🎯 Haftalık Soru Hedefi</h1>
+      <p style={{ color: "#94a3b8", marginBottom: "24px" }}>Bu hafta çözmek istediğin soru sayısını kendin belirle ve hedefine odaklan!</p>
 
-      <div style={{ backgroundColor: "#111827", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-          <thead>
-            <tr style={{ backgroundColor: "#1f2937", borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#94a3b8", fontSize: "13px" }}>
-              <th style={{ padding: "14px 16px" }}>Sıra</th>
-              <th style={{ padding: "14px 16px" }}>Öğrenci</th>
-              <th style={{ padding: "14px 16px" }}>Çözülen Soru</th>
-              <th style={{ padding: "14px 16px" }}>Puan</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ogrenciler.map((item) => (
-              <tr key={item.sira} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", backgroundColor: item.sira === 1 ? "rgba(37, 99, 235, 0.1)" : "transparent" }}>
-                <td style={{ padding: "14px 16px", fontWeight: "bold" }}>#{item.sira}</td>
-                <td style={{ padding: "14px 16px" }}>{item.isim}</td>
-                <td style={{ padding: "14px 16px" }}>{item.soru} Soru</td>
-                <td style={{ padding: "14px 16px", color: "#38bdf8", fontWeight: "bold" }}>{item.puan} Puan</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {kaydedildi && (
+        <div style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", border: "1px solid #22c55e", padding: "12px", borderRadius: "8px", color: "#4ade80", marginBottom: "20px" }}>
+          ✅ Haftalık hedefin başarıyla kaydedildi!
+        </div>
+      )}
+
+      <form onSubmit={handleKaydet} style={{ backgroundColor: "#111827", padding: "24px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: 500 }}>
+          Bu Hafta Çözmeyi Hedeflediğin Soru Sayısı:
+        </label>
+        <input 
+          type="number" 
+          value={hedef} 
+          onChange={(e) => setHedef(e.target.value)} 
+          style={{ width: "100%", padding: "12px", borderRadius: "8px", backgroundColor: "#1f2937", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: "16px", marginBottom: "20px", boxSizing: "border-box" }}
+        />
+        <button type="submit" style={{ backgroundColor: "#2563eb", color: "#fff", border: "none", padding: "12px 20px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", width: "100%" }}>
+          Hedefi Kaydet
+        </button>
+      </form>
     </div>
   );
 }

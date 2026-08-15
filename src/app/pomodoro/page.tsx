@@ -1,63 +1,82 @@
 "use client";
-
 import { useState, useEffect } from "react";
 
-export default function PomodoroPage() {
-  const [saniye, setSaniye] = useState(25 * 60);
-  const [calisiyor, setCalisiyor] = useState(false);
-  const [molaModu, setMolaModu] = useState(false);
+export default function Pomodoro() {
+  const [dakika, setDakika] = useState(25);
+  const [saniye, setSaniye] = useState(0);
+  const [aktif, setAktif] = useState(false);
+  const [toplamDakika, setToplamDakika] = useState(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (calisiyor && saniye > 0) {
-      interval = setInterval(() => setSaniye((prev) => prev - 1), 1000);
-    } else if (saniye === 0) {
-      if (!molaModu) {
-        alert("🎉 25 dakikalık çalışma bitti! Şimdi 5 dakika mola zamanı.");
-        setMolaModu(true);
-        setSaniye(5 * 60);
-      } else {
-        alert("⚡ Mola bitti! Yeni bir çalışma seansına başla.");
-        setMolaModu(false);
-        setSaniye(25 * 60);
-      }
-      setCalisiyor(false);
+    // Kayıtlı toplam çalışma süresini alalım
+    const kayitliSure = localStorage.getItem("lgs_toplam_calisma_suresi");
+    if (kayitliSure) {
+      setToplamDakika(Number(kayitliSure));
     }
-    return () => clearInterval(interval);
-  }, [calisiyor, saniye, molaModu]);
+  }, []);
 
-  const dakikaFormat = Math.floor(saniye / 60).toString().padStart(2, "0");
-  const saniyeFormat = (saniye % 60).toString().padStart(2, "0");
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (aktif) {
+      interval = setInterval(() => {
+        if (saniye > 0) {
+          setSaniye(saniye - 1);
+        } else if (dakika > 0) {
+          setDakika(dakika - 1);
+          setSaniye(59);
+        } else {
+          setAktif(false);
+          alert("Tebrikler! Bir Pomodoro seansını tamamladın! 🎉");
+          const yeniSure = toplamDakika + 25;
+          setToplamDakika(yeniSure);
+          localStorage.setItem("lgs_toplam_calisma_suresi", yeniSure.toString());
+          setDakika(25);
+          setSaniye(0);
+        }
+      }, 1000);
+    } else if (!aktif && interval) {
+      clearInterval(interval);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [aktif, dakika, saniye, toplamDakika]);
 
-  const sifirla = () => {
-    setCalisiyor(false);
-    setSaniye(molaModu ? 5 * 60 : 25 * 60);
+  const sureyiSifirla = () => {
+    setAktif(false);
+    setDakika(25);
+    setSaniye(0);
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center", display: "flex", flexDirection: "column", gap: "24px" }}>
-      <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "bold", margin: 0, color: "var(--text-primary)" }}>🍅 Pomodoro Zamanlayıcı</h1>
-        <p style={{ fontSize: "14px", color: "var(--text-secondary)", margin: "4px 0 0 0" }}>25 dakika odaklanarak çalış, 5 dakika mola ver!</p>
-      </div>
+    <div style={{ color: "#f8fafc", maxWidth: "600px", textAlign: "center" }}>
+      <h1 style={{ fontSize: "24px", marginBottom: "8px" }}>🍅 Pomodoro Çalışma Asistanı</h1>
+      <p style={{ color: "#94a3b8", marginBottom: "30px" }}>25 dakika odaklan, 5 dakika mola ver. Başarı adım adım gelir!</p>
 
-      <div style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border-color)", padding: "40px", borderRadius: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
-        <span style={{ fontSize: "14px", fontWeight: "bold", padding: "6px 14px", borderRadius: "20px", backgroundColor: molaModu ? "rgba(22, 163, 74, 0.1)" : "rgba(37, 99, 235, 0.1)", color: molaModu ? "#16a34a" : "#2563eb" }}>
-          {molaModu ? "☕ Mola Zamanı" : "📚 Odaklanma Zamanı"}
-        </span>
+      <div style={{ backgroundColor: "#111827", padding: "40px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "24px" }}>
+        <div style={{ fontSize: "64px", fontWeight: "bold", color: "#38bdf8", marginBottom: "20px" }}>
+          {String(dakika).padStart(2, "0")}:{String(saniye).padStart(2, "0")}
+        </div>
 
-        <h2 style={{ fontSize: "64px", fontWeight: "bold", margin: 0, color: "var(--text-primary)", fontFamily: "monospace" }}>
-          {dakikaFormat}:{saniyeFormat}
-        </h2>
-
-        <div style={{ display: "flex", gap: "12px" }}>
-          <button onClick={() => setCalisiyor(!calisiyor)} style={{ backgroundColor: calisiyor ? "#d97706" : "#2563eb", color: "white", border: "none", padding: "12px 28px", borderRadius: "10px", fontWeight: "bold", fontSize: "16px", cursor: "pointer" }}>
-            {calisiyor ? "⏸️ Duraklat" : "▶️ Başlat"}
+        <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+          <button 
+            onClick={() => setAktif(!aktif)} 
+            style={{ backgroundColor: aktif ? "#dc2626" : "#2563eb", color: "#fff", border: "none", padding: "12px 24px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+          >
+            {aktif  ? "Durdur ⏸️" : "Başlat ▶️"}
           </button>
-          <button onClick={sifirla} style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)", border: "1px solid var(--border-color)", padding: "12px 20px", borderRadius: "10px", fontWeight: "bold", fontSize: "14px", cursor: "pointer" }}>
-            🔄 Sıfırla
+          <button 
+            onClick={sureyiSifirla} 
+            style={{ backgroundColor: "#1f2937", color: "#f87171", border: "1px solid rgba(255,255,255,0.1)", padding: "12px 20px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
+          >
+            Sıfırla 🔄
           </button>
         </div>
+      </div>
+
+      <div style={{ backgroundColor: "rgba(37, 99, 235, 0.1)", border: "1px solid rgba(37, 99, 235, 0.3)", padding: "16px", borderRadius: "12px" }}>
+        <span style={{ fontSize: "14px", color: "#93c5fd" }}>Bugüne Kadar Toplam Çalışma Süren: </span>
+        <strong style={{ fontSize: "18px", color: "#ffffff" }}>{toplamDakika} Dakika ⏱️</strong>
       </div>
     </div>
   );

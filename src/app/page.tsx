@@ -1,18 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function AnaSayfa() {
   const [haftalikHedef, setHaftalikHedef] = useState("100");
   const [toplamSoru, setToplamSoru] = useState(0);
+  const [kullaniciAdi, setKullaniciAdi] = useState("Şampiyon");
+  const [calismaSuresi, setCalismaSuresi] = useState(0);
 
   useEffect(() => {
-    // Kayıtlı hedefi al
+    // Kayıtlı verileri yükleyelim
     const hedef = localStorage.getItem("lgs_haftalik_hedef");
-    if (hedef) {
-      setHaftalikHedef(hedef);
-    }
+    if (hedef) setHaftalikHedef(hedef);
 
-    // Toplam çözülen soruyu yanlışlar/sorular sayfasından hesapla
+    const ad = localStorage.getItem("lgs_gercek_kullanici_adi");
+    if (ad) setKullaniciAdi(ad);
+
+    const sure = localStorage.getItem("lgs_toplam_calisma_suresi");
+    if (sure) setCalismaSuresi(Number(sure));
+
     const yanlislar = localStorage.getItem("lgs_yanlislar");
     if (yanlislar) {
       try {
@@ -24,30 +30,85 @@ export default function AnaSayfa() {
     }
   }, []);
 
-  return (
-    <div style={{ color: "#f8fafc", maxWidth: "800px" }}>
-      <h1 style={{ fontSize: "28px", marginBottom: "8px" }}>👋 Hoş Geldin, LGS Asistanı'na!</h1>
-      <p style={{ color: "#94a3b8", marginBottom: "24px" }}>Hedefine ulaşmak için bugün harika bir gün.</p>
+  const hedefSayi = Number(haftalikHedef) || 100;
+  const yuzde = Math.min(Math.round((toplamSoru / hedefSayi) * 100), 100);
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px", marginBottom: "30px" }}>
+  return (
+    <div style={{ color: "#f8fafc", maxWidth: "1000px", margin: "0 auto" }}>
+      
+      {/* ÜST KARŞILAMA BÖLÜMÜ */}
+      <div style={{ backgroundColor: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", background: "#111827", padding: "30px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+        <div>
+          <span style={{ backgroundColor: "rgba(37, 99, 235, 0.2)", color: "#60a5fa", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: 600 }}>🚀 LGS Hedef Portalı</span>
+          <h1 style={{ fontSize: "28px", margin: "12px 0 6px 0", fontWeight: 700 }}>Hoş geldin, {kullaniciAdi}! 👋</h1>
+          <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Bugün harika şeyler başarmak için harika bir gün. Zirveye bir adım daha yaklaş!</p>
+        </div>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <Link href="/yanlislarim" style={{ backgroundColor: "#2563eb", color: "#fff", padding: "10px 18px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>+ Soru Ekle</Link>
+          <Link href="/pomodoro" style={{ backgroundColor: "#1f2937", color: "#38bdf8", border: "1px solid rgba(255,255,255,0.1)", padding: "10px 18px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>🍅 Pomodoro</Link>
+        </div>
+      </div>
+
+      {/* İSTATİSTİK KARTLARI */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "24px" }}>
         
-        {/* Haftalık Hedef Kartı */}
         <div style={{ backgroundColor: "#111827", padding: "20px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
-          <span style={{ fontSize: "14px", color: "#94a3b8" }}>Haftalık Soru Hedefin</span>
-          <div style={{ fontSize: "28px", fontWeight: "bold", color: "#38bdf8", marginTop: "8px" }}>
-            {haftalikHedef} Soru
-          </div>
+          <span style={{ fontSize: "13px", color: "#94a3b8" }}>Haftalık Soru Hedefin</span>
+          <div style={{ fontSize: "24px", fontWeight: "bold", color: "#38bdf8", marginTop: "8px" }}>{haftalikHedef} Soru</div>
         </div>
 
-        {/* Çözülen Soru Kartı */}
         <div style={{ backgroundColor: "#111827", padding: "20px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
-          <span style={{ fontSize: "14px", color: "#94a3b8" }}>Toplam Çözülen Soru</span>
-          <div style={{ fontSize: "28px", fontWeight: "bold", color: "#22c55e", marginTop: "8px" }}>
-            {toplamSoru} Soru
-          </div>
+          <span style={{ fontSize: "13px", color: "#94a3b8" }}>Toplam Çözülen Soru</span>
+          <div style={{ fontSize: "24px", fontWeight: "bold", color: "#22c55e", marginTop: "8px" }}>{toplamSoru} Soru</div>
+        </div>
+
+        <div style={{ backgroundColor: "#111827", padding: "20px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <span style={{ fontSize: "13px", color: "#94a3b8" }}>Toplam Çalışma Süresi</span>
+          <div style={{ fontSize: "24px", fontWeight: "bold", color: "#facc15", marginTop: "8px" }}>{calismaSuresi} Dk</div>
+        </div>
+
+        <div style={{ backgroundColor: "#111827", padding: "20px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <span style={{ fontSize: "13px", color: "#94a3b8" }}>Hedef Tamamlama</span>
+          <div style={{ fontSize: "24px", fontWeight: "bold", color: "#ec4899", marginTop: "8px" }}>%{yuzde}</div>
         </div>
 
       </div>
+
+      {/* İLERLEME ÇUĞU (GRAFİKSEL GÖRÜNÜM) */}
+      <div style={{ backgroundColor: "#111827", padding: "24px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", fontSize: "14px" }}>
+          <span style={{ fontWeight: 600 }}>Haftalık İlerleme Durumu</span>
+          <span style={{ color: "#38bdf8", fontWeight: "bold" }}>%{yuzde} Tamamlandı</span>
+        </div>
+        <div style={{ width: "100%", backgroundColor: "#1f2937", height: "14px", borderRadius: "7px", overflow: "hidden" }}>
+          <div style={{ width: `${yuzde}%`, backgroundColor: "#2563eb", height: "100%", transition: "width 0.5s ease" }}></div>
+        </div>
+      </div>
+
+      {/* HIZLI ERİŞİM KISAYOLLARI */}
+      <h2 style={{ fontSize: "18px", marginBottom: "14px" }}>⚡ Hızlı Kısayollar</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+        
+        <Link href="/siralama" style={{ backgroundColor: "#111827", padding: "18px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", color: "#fff", display: "block" }}>
+          <div style={{ fontSize: "20px", marginBottom: "6px" }}>🥇</div>
+          <div style={{ fontWeight: 600, fontSize: "15px" }}>Liderlik Sıralaması</div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>Sıralamadaki yerini gör</div>
+        </Link>
+
+        <Link href="/notlar" style={{ backgroundColor: "#111827", padding: "18px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", color: "#fff", display: "block" }}>
+          <div style={{ fontSize: "20px", marginBottom: "6px" }}>📝</div>
+          <div style={{ fontWeight: 600, fontSize: "15px" }}>Hızlı Notlar</div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>Formülleri ve notları kaydet</div>
+        </Link>
+
+        <Link href="/motivasyon" style={{ backgroundColor: "#111827", padding: "18px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", color: "#fff", display: "block" }}>
+          <div style={{ fontSize: "20px", marginBottom: "6px" }}>💡</div>
+          <div style={{ fontWeight: "600", fontSize: "15px" }}>Motivasyon Köşesi</div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>Günün sözüyle moral depola</div>
+        </Link>
+
+      </div>
+
     </div>
   );
 }

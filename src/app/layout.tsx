@@ -33,13 +33,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               <nav style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 <Link href="/" style={linkStil}><span>🏠</span> Ana Sayfa</Link>
-                <Link href="/lgs-hesapla" style={linkStil}><span>➕</span> LGS Hesapla / Soru Ekle</Link>
+                <Link href="/soru-ekle" style={linkStil}><span>➕</span> Soru Ekle</Link>
+                <Link href="/lgs-hesapla" style={linkStil}><span>🧮</span> LGS Puan Hesapla</Link>
                 <Link href="/siralama" style={linkStil}><span>🥇</span> Sıralama</Link>
                 <Link href="/haftalik-hedef" style={linkStil}><span>🎯</span> Haftalık Hedef</Link>
                 <Link href="/yanlislarim" style={linkStil}><span>❌</span> Yanlış Sorularım</Link>
                 <Link href="/pomodoro" style={linkStil}><span>🍅</span> Pomodoro</Link>
                 <Link href="/notlar" style={linkStil}><span>📝</span> Hızlı Notlar</Link>
-                <Link href="/motivasyon" style={linkStil}><span>💡</span> Motivasyon Köşesi</Link>
                 <Link href="/degerlendir" style={linkStil}><span>⭐</span> Bizi Değerlendir</Link>
               </nav>
             </div>

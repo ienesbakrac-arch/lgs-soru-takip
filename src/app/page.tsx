@@ -43,7 +43,7 @@ export default function AnaSayfa() {
           <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Bugün harika şeyler başarmak için harika bir gün. Zirveye bir adım daha yaklaş!</p>
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
-          <Link href="/lgs-hesapla" style={{ backgroundColor: "#2563eb", color: "#fff", padding: "10px 18px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>+ Soru Ekle</Link>
+          <Link href="/soru-ekle" style={{ backgroundColor: "#2563eb", color: "#fff", padding: "10px 18px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>+ Soru Ekle</Link>
           <Link href="/pomodoro" style={{ backgroundColor: "#1f2937", color: "#38bdf8", border: "1px solid rgba(255,255,255,0.1)", padding: "10px 18px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>🍅 Pomodoro</Link>
         </div>
       </div>

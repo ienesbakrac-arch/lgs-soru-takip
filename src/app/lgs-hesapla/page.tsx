@@ -1,116 +1,72 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-export default function SoruEkleSayfasi() {
-  const [ders, setDers] = useState("Matematik");
-  const [adet, setAdet] = useState("");
-  const [mesaj, setMesaj] = useState("");
-  const [toplamListe, setToplamListe] = useState<{ ders: string; adet: number; tarih: string }[]>([]);
+export default function LgsHesaplaPage() {
+  const [puan, setPuan] = useState<number | null>(null);
 
-  useEffect(() => {
-    const kayitli = localStorage.getItem("lgs_genel_sorular");
-    if (kayitli) {
-      try {
-        setToplamListe(JSON.parse(kayitli));
-      } catch (e) {}
-    }
-  }, []);
+  const [turkceD, setTurkceD] = useState("");
+  const [turkceY, setTurkceY] = useState("");
+  const [matD, setMatD] = useState("");
+  const [matY, setMatY] = useState("");
+  const [fenD, setFenD] = useState("");
+  const [fenY, setFenY] = useState("");
+  const [inkD, setInkD] = useState("");
+  const [inkY, setInkY] = useState("");
+  const [dinD, setDinD] = useState("");
+  const [dinY, setDinY] = useState("");
+  const [ingD, setIngD] = useState("");
+  const [ingY, setIngY] = useState("");
 
-  const soruEkle = (e: React.FormEvent) => {
+  const hesapla = (e: React.FormEvent) => {
     e.preventDefault();
-    const sayi = Number(adet);
-    if (!sayi || sayi <= 0) {
-      setMesaj("⚠️ Lütfen geçerli bir soru sayısı gir!");
-      return;
-    }
-
-    const yeniKayit = {
-      ders,
-      adet: sayi,
-      tarih: new Date().toLocaleDateString("tr-TR")
-    };
-
-    const guncelListe = [yeniKayit, ...toplamListe];
-    setToplamListe(guncelListe);
-    localStorage.setItem("lgs_genel_sorular", JSON.stringify(guncelListe));
-
-    // Ana sayfa sayaçlarını beslemek için
-    const eskiYanlislar = localStorage.getItem("lgs_yanlislar");
-    let yanlisDizi = [];
-    try {
-      if (eskiYanlislar) yanlisDizi = JSON.parse(eskiYanlislar);
-    } catch (e) {}
-
-    const eklenenler = Array(sayi).fill({ ders, tip: "Genel Soru" });
-    const yeniToplamYanlislar = [...yanlisDizi, ...eklenenler];
-    localStorage.setItem("lgs_yanlislar", JSON.stringify(yeniToplamYanlislar));
-
-    setAdet("");
-    setMesaj("✅ Soru başarıyla eklendi ve hedefine işlendi!");
-    setTimeout(() => setMesaj(""), 3000);
+    
+    // Net hesaplamaları (3 yanlış 1 doğruyu götürür mantığıyla)
+    const netTurkce = Math.max(0, Number(turkceD) - Number(turkceY) / 3);
+    const netMat = Math.max(0, Number(matD) - Number(matY) / 3);
+    const netFen = Math.max(0, Number(fenD) - Number(fenY) / 3);
+    const netInk = Math.max(0, Number(inkD) - Number(inkY) / 3);
+    const netDin = Math.max(0, Number(dinD) - Number(dinY) / 3);
+    const netIng = Math.max(0, Number(ingD) - Number(ingY) / 3);
+    
+    // Tahmini LGS puan formülü katsayıları
+    const tahminiPuan = 200 + (netMat * 4.9) + (netTurkce * 4.1) + (netFen * 4.1) + (netInk * 2.1) + (netDin * 2.1) + (netIng * 2.1);
+    setPuan(Math.max(200, Math.min(500, Number(tahminiPuan.toFixed(2)))));
   };
 
   return (
     <div style={{ color: "#f8fafc", maxWidth: "700px", margin: "0 auto", paddingBottom: "40px" }}>
-      <h1 style={{ fontSize: "24px", marginBottom: "8px", fontWeight: "bold" }}>➕ Soru Ekle ve Takip Et</h1>
-      <p style={{ color: "#94a3b8", fontSize: "14px", marginBottom: "20px" }}>Hangi dersten kaç soru çözdüğünü buradan kolayca kaydet.</p>
+      <h1 style={{ fontSize: "24px", marginBottom: "8px", fontWeight: "bold" }}>🧮 LGS Puan Hesaplama</h1>
+      <p style={{ color: "#94a3b8", fontSize: "14px", marginBottom: "20px" }}>Tüm derslerin doğru ve yanlış sayılarını girerek tahmini LGS puanını hesapla.</p>
 
-      {mesaj && (
-        <div style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", padding: "12px", borderRadius: "8px", color: "#4ade80", marginBottom: "20px", fontSize: "14px", border: "1px solid rgba(34, 197, 94, 0.3)" }}>
-          {mesaj}
-        </div>
-      )}
-
-      <form onSubmit={soruEkle} style={{ backgroundColor: "#111827", padding: "24px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "30px" }}>
+      <form onSubmit={hesapla} style={{ backgroundColor: "#111827", padding: "24px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: "12px" }}>
         
-        <div style={{ marginBottom: "16px" }}>
-          <label style={{ display: "block", fontSize: "14px", color: "#cbd5e1", marginBottom: "8px", fontWeight: 600 }}>Ders Seçimi</label>
-          <select 
-            value={ders} 
-            onChange={(e) => setDers(e.target.value)}
-            style={{ width: "100%", padding: "12px", borderRadius: "8px", backgroundColor: "#1f2937", border: "1px solid #3b82f6", color: "#fff", fontSize: "15px", outline: "none", boxSizing: "border-box" }}
-          >
-            <option value="Matematik" style={{ backgroundColor: "#1f2937", color: "#fff" }}>Matematik</option>
-            <option value="Türkçe" style={{ backgroundColor: "#1f2937", color: "#fff" }}>Türkçe</option>
-            <option value="Fen Bilimleri" style={{ backgroundColor: "#1f2937", color: "#fff" }}>Fen Bilimleri</option>
-            <option value="T.C. İnkılap Tarihi" style={{ backgroundColor: "#1f2937", color: "#fff" }}>T.C. İnkılap Tarihi</option>
-            <option value="Din Kültürü" style={{ backgroundColor: "#1f2937", color: "#fff" }}>Din Kültürü</option>
-            <option value="İngilizce" style={{ backgroundColor: "#1f2937", color: "#fff" }}>İngilizce</option>
-          </select>
-        </div>
+        {/* Ortak Ders Satırı Oluşturucu Fonksiyon veya Tek Tek Alanlar */}
+        {[
+          { label: "Türkçe (20 Soru)", d: turkceD, setD: setTurkceD, y: turkceY, setY: setTurkceY },
+          { label: "Matematik (20 Soru)", d: matD, setD: setMatD, y: matY, setY: setMatY },
+          { label: "Fen Bilimleri (20 Soru)", d: fenD, setD: setFenD, y: fenY, setY: setFenY },
+          { label: "T.C. İnkılap (10 Soru)", d: inkD, setD: setInkD, y: inkY, setY: setInkY },
+          { label: "Din Kültürü (10 Soru)", d: dinD, setD: setDinD, y: dinY, setY: setDinY },
+          { label: "İngilizce (10 Soru)", d: ingD, setD: setIngD, y: ingY, setY: setIngY },
+        ].map((ders, index) => (
+          <div key={index} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#1f2937", padding: "12px 16px", borderRadius: "8px" }}>
+            <span style={{ fontWeight: 600, color: "#fff", fontSize: "14px", width: "160px" }}>{ders.label}</span>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <input type="number" placeholder="Doğru" value={ders.d} onChange={(e) => ders.setD(e.target.value)} style={{ width: "75px", padding: "8px", backgroundColor: "#111827", border: "1px solid #374151", color: "#fff", borderRadius: "6px", fontSize: "14px" }} />
+              <input type="number" placeholder="Yanlış" value={ders.y} onChange={(e) => ders.setY(e.target.value)} style={{ width: "75px", padding: "8px", backgroundColor: "#111827", border: "1px solid #374151", color: "#fff", borderRadius: "6px", fontSize: "14px" }} />
+            </div>
+          </div>
+        ))}
 
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", fontSize: "14px", color: "#cbd5e1", marginBottom: "8px", fontWeight: 600 }}>Çözülen Soru Adedi</label>
-          <input 
-            type="number" 
-            placeholder="Örn: 25" 
-            value={adet} 
-            onChange={(e) => setAdet(e.target.value)}
-            style={{ width: "100%", padding: "12px", borderRadius: "8px", backgroundColor: "#1f2937", border: "1px solid #3b82f6", color: "#fff", fontSize: "15px", outline: "none", boxSizing: "border-box" }}
-          />
-        </div>
-
-        <button type="submit" style={{ width: "100%", padding: "12px", backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "15px", cursor: "pointer" }}>
-          Soruyu Kaydet 🚀
+        <button type="submit" style={{ marginTop: "10px", width: "100%", padding: "12px", backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "15px", cursor: "pointer" }}>
+          Puanı Hesapla 🎯
         </button>
       </form>
 
-      <h2 style={{ fontSize: "18px", marginBottom: "12px" }}>📋 Eklenen Soruların Geçmişi</h2>
-      {toplamListe.length === 0 ? (
-        <p style={{ color: "#64748b", fontSize: "14px" }}>Henüz soru eklenmemiş. Yukarıdan ilk sorunu ekle!</p>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {toplamListe.map((item, index) => (
-            <div key={index} style={{ backgroundColor: "#111827", padding: "14px 18px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <span style={{ fontWeight: "bold", color: "#38bdf8", fontSize: "15px" }}>{item.ders}</span>
-                <span style={{ color: "#94a3b8", fontSize: "13px", marginLeft: "10px" }}>({item.tarih})</span>
-              </div>
-              <div style={{ backgroundColor: "rgba(34, 197, 94, 0.15)", color: "#4ade80", padding: "4px 10px", borderRadius: "6px", fontWeight: "bold", fontSize: "14px" }}>
-                +{item.adet} Soru
-              </div>
-            </div>
-          ))}
+      {puan !== null && (
+        <div style={{ marginTop: "20px", backgroundColor: "#111827", padding: "20px", borderRadius: "12px", border: "1px solid rgba(34, 197, 94, 0.3)", textAlign: "center" }}>
+          <span style={{ color: "#94a3b8", fontSize: "14px" }}>Tahmini LGS Puanın:</span>
+          <div style={{ fontSize: "32px", fontWeight: "bold", color: "#4ade80", marginTop: "6px" }}>{puan} Puan</div>
         </div>
       )}
     </div>

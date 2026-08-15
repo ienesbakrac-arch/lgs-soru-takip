@@ -38,7 +38,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/yanlislarim" style={linkStil}><span>❌</span> Yanlış Sorularım</Link>
                 <Link href="/pomodoro" style={linkStil}><span>🍅</span> Pomodoro</Link>
                 <Link href="/notlar" style={linkStil}><span>📝</span> Hızlı Notlar</Link>
-                <Link href="/motivasyon" style={linkStil}><span>💡</span> Motivasyon Köşesi</Link>
                 <Link href="/degerlendir" style={linkStil}><span>⭐</span> Bizi Değerlendir</Link>
               </nav>
             </div>

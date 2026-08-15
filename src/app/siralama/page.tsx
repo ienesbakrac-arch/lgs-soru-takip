@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 interface Ogrenci {
   isim: string;
   soru: number;
-  puan: number;
 }
 
 export default function Siralama() {
@@ -14,11 +13,10 @@ export default function Siralama() {
   const [kayitliMi, setKayitliMi] = useState(false);
 
   useEffect(() => {
-    // 1. Daha önce kaydedilmiş kullanıcı adını ve listeyi alalım
     const kayitliAd = localStorage.getItem("lgs_gercek_kullanici_adi");
     const kayitliListe = localStorage.getItem("lgs_liderlik_listesi");
 
-    // 2. Yanlışlar veya çözülen sorulardan toplam soru sayısını hesaplayalım
+    // "Yanlışlarım" veya kayıtlı soru havuzundan gerçek soru sayısını alalım
     const kaydedilenYanlislar = localStorage.getItem("lgs_yanlislar");
     let toplamSoru = 0;
     
@@ -26,7 +24,8 @@ export default function Siralama() {
       try {
         const parsed = JSON.parse(kaydedilenYanlislar);
         if (Array.isArray(parsed)) {
-          toplamSoru = parsed.length * 10; // Her soru/yanlış için puan katsayısı
+          // Her kayıtlı yanlış/soru için gerçek sayıyı baz alalım (Her biri 1 soru veya kayıt sayısı)
+          toplamSoru = parsed.length; 
         }
       } catch (e) {
         console.error(e);
@@ -37,20 +36,17 @@ export default function Siralama() {
       setKullaniciAdi(kayitliAd);
       setKayitliMi(true);
 
-      // Listeyi yükle veya kullanıcıyı listeye ekle/güncelle
       let liste: Ogrenci[] = kayitliListe ? JSON.parse(kayitliListe) : [];
-      
       const mevcutIndex = liste.findIndex((o) => o.isim === kayitliAd);
-      const guncelPuan = Math.max(toplamSoru, 10) * 3 + 100;
 
       if (mevcutIndex >= 0) {
-        liste[mevcutIndex].soru = Math.max(toplamSoru, 10);
-        liste[mevcutIndex].puan = guncelPuan;
+        liste[mevcutIndex].soru = toplamSoru;
       } else {
-        liste.push({ isim: kayitliAd, soru: Math.max(toplamSoru, 10), puan: guncelPuan });
+        liste.push({ isim: kayitliAd, soru: toplamSoru });
       }
 
-      liste.sort((a, b) => b.puan - a.puan);
+      // Soru sayısına göre büyükten küçüğe sırala
+      liste.sort((a, b) => b.soru - a.soru);
       setOgrenciler(liste);
       localStorage.setItem("lgs_liderlik_listesi", JSON.stringify(liste));
     } else if (kayitliListe) {
@@ -66,23 +62,21 @@ export default function Siralama() {
       setKullaniciAdi(ad);
       setKayitliMi(true);
 
-      // Listeye ekle
       const kaydedilenYanlislar = localStorage.getItem("lgs_yanlislar");
-      let toplamSoru = 10;
+      let toplamSoru = 0;
       if (kaydedilenYanlislar) {
         try {
           const parsed = JSON.parse(kaydedilenYanlislar);
-          if (Array.isArray(parsed)) toplamSoru = Math.max(parsed.length * 10, 10);
+          if (Array.isArray(parsed)) toplamSoru = parsed.length;
         } catch (e) {}
       }
 
-      const yeniOgrenci: Ogrenci = { isim: ad, soru: toplamSoru, puan: toplamSoru * 3 + 100 };
+      const yeniOgrenci: Ogrenci = { isim: ad, soru: toplamSoru };
       let liste: Ogrenci[] = localStorage.getItem("lgs_liderlik_listesi") ? JSON.parse(localStorage.getItem("lgs_liderlik_listesi")!) : [];
       
-      // Aynı isim varsa güncelle, yoksa ekle
       liste = liste.filter(o => o.isim !== ad);
       liste.push(yeniOgrenci);
-      liste.sort((a, b) => b.puan - a.puan);
+      liste.sort((a, b) => b.soru - a.soru);
 
       setOgrenciler(liste);
       localStorage.setItem("lgs_liderlik_listesi", JSON.stringify(liste));
@@ -100,8 +94,8 @@ export default function Siralama() {
     <div style={{ color: "#f8fafc", maxWidth: "900px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
         <div>
-          <h1 style={{ fontSize: "24px", margin: "0 0 4px 0" }}>🥇 Gerçek Liderlik Sıralaması</h1>
-          <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Sahte isim yok! Sadece adını yazan ve soru çözen gerçek öğrenciler yer alır.</p>
+          <h1 style={{ fontSize: "24px", margin: "0 0 4px 0" }}>🥇 Liderlik Sıralaması</h1>
+          <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Çözdüğün sorular doğrudan sıralamanı belirler.</p>
         </div>
 
         {kayitliMi && (
@@ -119,8 +113,8 @@ export default function Siralama() {
 
       {!kayitliMi ? (
         <div style={{ backgroundColor: "#111827", padding: "30px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", textAlign: "center", maxWidth: "450px", margin: "40px auto" }}>
-          <h2 style={{ fontSize: "18px", marginBottom: "10px" }}>Liderlik Tablosuna Katıl</h2>
-          <p style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "20px" }}>Adını yazarak sıralamaya girebilir ve çözdüğün sorularla puanını artırabilirsin.</p>
+          <h2 style={{ fontSize: "18px", marginBottom: "10px" }}>Sıralamaya Katıl</h2>
+          <p style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "20px" }}>Adını yazarak listeye adını yazdırabilirsin.</p>
           <form onSubmit={isimKaydetVeKatil} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <input 
               type="text" 
@@ -132,7 +126,7 @@ export default function Siralama() {
               autoFocus
             />
             <button type="submit" style={{ backgroundColor: "#2563eb", color: "#fff", border: "none", padding: "12px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "15px" }}>
-              Sıralamaya Katıl ve Kaydet
+              Sıralamaya Katıl
             </button>
           </form>
         </div>
@@ -143,14 +137,13 @@ export default function Siralama() {
               <tr style={{ backgroundColor: "#1f2937", borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#94a3b8", fontSize: "13px" }}>
                 <th style={{ padding: "14px 16px" }}>Sıra</th>
                 <th style={{ padding: "14px 16px" }}>Öğrenci Adı</th>
-                <th style={{ padding: "14px 16px" }}>Çözülen Soru</th>
-                <th style={{ padding: "14px 16px" }}>Başarı Puanı</th>
+                <th style={{ padding: "14px 16px" }}>Çözülen Soru Sayısı</th>
               </tr>
             </thead>
             <tbody>
               {ogrenciler.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={{ padding: "30px", textAlign: "center", color: "#94a3b8" }}>Henüz kayıtlı öğrenci bulunmuyor.</td>
+                  <td colSpan={3} style={{ padding: "30px", textAlign: "center", color: "#94a3b8" }}>Henüz kayıtlı öğrenci bulunmuyor.</td>
                 </tr>
               ) : (
                 ogrenciler.map((item, index) => {
@@ -170,8 +163,7 @@ export default function Siralama() {
                       <td style={{ padding: "14px 16px", color: benMi ? "#60a5fa" : "#f8fafc" }}>
                         {item.isim} {benMi && "⭐ (Sen)"}
                       </td>
-                      <td style={{ padding: "14px 16px" }}>{item.soru} Soru</td>
-                      <td style={{ padding: "14px 16px", color: "#38bdf8", fontWeight: "bold" }}>{item.puan} Puan</td>
+                      <td style={{ padding: "14px 16px", color: "#38bdf8", fontWeight: "bold" }}>{item.soru} Soru</td>
                     </tr>
                   );
                 })

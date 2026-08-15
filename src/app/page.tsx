@@ -37,14 +37,14 @@ export default function AnaSayfa() {
     <div style={{ color: "#f8fafc", maxWidth: "1000px", margin: "0 auto" }}>
       
       {/* ÜST KARŞILAMA BÖLÜMÜ */}
-      <div style={{ backgroundColor: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", background: "#111827", padding: "30px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+      <div style={{ background: "#111827", padding: "30px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
         <div>
           <span style={{ backgroundColor: "rgba(37, 99, 235, 0.2)", color: "#60a5fa", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: 600 }}>🚀 LGS Hedef Portalı</span>
           <h1 style={{ fontSize: "28px", margin: "12px 0 6px 0", fontWeight: 700 }}>Hoş geldin, {kullaniciAdi}! 👋</h1>
           <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Bugün harika şeyler başarmak için harika bir gün. Zirveye bir adım daha yaklaş!</p>
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
-          <Link href="/yanlislarim" style={{ backgroundColor: "#2563eb", color: "#fff", padding: "10px 18px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>+ Soru Ekle</Link>
+          <Link href="/lgs-hesapla" style={{ backgroundColor: "#2563eb", color: "#fff", padding: "10px 18px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>+ Soru Ekle</Link>
           <Link href="/pomodoro" style={{ backgroundColor: "#1f2937", color: "#38bdf8", border: "1px solid rgba(255,255,255,0.1)", padding: "10px 18px", borderRadius: "8px", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>🍅 Pomodoro</Link>
         </div>
       </div>

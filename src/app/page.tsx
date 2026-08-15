@@ -9,7 +9,6 @@ export default function AnaSayfa() {
   const [calismaSuresi, setCalismaSuresi] = useState(0);
 
   useEffect(() => {
-    // Kayıtlı verileri yükleyelim
     const hedef = localStorage.getItem("lgs_haftalik_hedef");
     if (hedef) setHaftalikHedef(hedef);
 
@@ -74,7 +73,7 @@ export default function AnaSayfa() {
 
       </div>
 
-      {/* İLERLEME ÇUĞU (GRAFİKSEL GÖRÜNÜM) */}
+      {/* İLERLEME ÇUĞU */}
       <div style={{ backgroundColor: "#111827", padding: "24px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", fontSize: "14px" }}>
           <span style={{ fontWeight: 600 }}>Haftalık İlerleme Durumu</span>
@@ -101,10 +100,10 @@ export default function AnaSayfa() {
           <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>Formülleri ve notları kaydet</div>
         </Link>
 
-        <Link href="/motivasyon" style={{ backgroundColor: "#111827", padding: "18px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", color: "#fff", display: "block" }}>
-          <div style={{ fontSize: "20px", marginBottom: "6px" }}>💡</div>
-          <div style={{ fontWeight: "600", fontSize: "15px" }}>Motivasyon Köşesi</div>
-          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>Günün sözüyle moral depola</div>
+        <Link href="/pomodoro" style={{ backgroundColor: "#111827", padding: "18px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", color: "#fff", display: "block" }}>
+          <div style={{ fontSize: "20px", marginBottom: "6px" }}>🍅</div>
+          <div style={{ fontWeight: "600", fontSize: "15px" }}>Pomodoro Sayaç</div>
+          <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>Çalışma süreni takip et</div>
         </Link>
 
       </div>

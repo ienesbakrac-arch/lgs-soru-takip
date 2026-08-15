@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 
-export default function LgsHesapla() {
+export default function SoruEkleSayfasi() {
   const [ders, setDers] = useState("Matematik");
   const [adet, setAdet] = useState("");
   const [mesaj, setMesaj] = useState("");
@@ -34,15 +34,13 @@ export default function LgsHesapla() {
     setToplamListe(guncelListe);
     localStorage.setItem("lgs_genel_sorular", JSON.stringify(guncelListe));
 
-    // Ana sayfanın toplam soru sayısını otomatik güncellemesi için
-    // Eskiden yanlışlardan çekiyorduk, şimdi genel soruları da ana sayfanın okuyabileceği formata ekleyelim:
+    // Ana sayfa sayaçlarını beslemek için
     const eskiYanlislar = localStorage.getItem("lgs_yanlislar");
     let yanlisDizi = [];
     try {
       if (eskiYanlislar) yanlisDizi = JSON.parse(eskiYanlislar);
     } catch (e) {}
 
-    // Toplam soru adedi kadar sahte kayıt oluşturup ana sayfa sayacını besleyelim
     const eklenenler = Array(sayi).fill({ ders, tip: "Genel Soru" });
     const yeniToplamYanlislar = [...yanlisDizi, ...eklenenler];
     localStorage.setItem("lgs_yanlislar", JSON.stringify(yeniToplamYanlislar));
@@ -63,7 +61,6 @@ export default function LgsHesapla() {
         </div>
       )}
 
-      {/* SORU EKLEME FORMU */}
       <form onSubmit={soruEkle} style={{ backgroundColor: "#111827", padding: "24px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "30px" }}>
         
         <div style={{ marginBottom: "16px" }}>
@@ -98,7 +95,6 @@ export default function LgsHesapla() {
         </button>
       </form>
 
-      {/* GEÇMİŞ ÇÖZÜLENLER LİSTESİ */}
       <h2 style={{ fontSize: "18px", marginBottom: "12px" }}>📋 Eklenen Soruların Geçmişi</h2>
       {toplamListe.length === 0 ? (
         <p style={{ color: "#64748b", fontSize: "14px" }}>Henüz soru eklenmemiş. Yukarıdan ilk sorunu ekle!</p>

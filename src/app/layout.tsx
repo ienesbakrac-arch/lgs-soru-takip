@@ -17,6 +17,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="tr">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <meta name="apple-mobile-web-app-title" content="LGS Asistan" />
+      </head>
       <body style={{ margin: 0, padding: 0, fontFamily: "sans-serif", backgroundColor: "#090d16", color: "#fff" }}>
         <div className="layout-container" style={{ display: "flex", minHeight: "100vh" }}>
           

@@ -1,123 +1,98 @@
 "use client";
 import { useState, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
 
-interface KullaniciSkor {
-  kullanici_adi: string;
-  toplam_soru: number;
-}
+const supabaseUrl = "https://tpemdbruuucesmjnlcuf.supabase.co";
+const supabaseKey = "sb_publishable_4lp4K2ohWa9SrqWuI7wlGA_RTiNK-i2";
+const client = createClient(supabaseUrl, supabaseKey);
 
-export default function SiralamaPage() {
-  const [siralama, setSiralama] = useState<KullaniciSkor[]>([]);
+export default function SiralamaSayfasi() {
+  const [siralama, setSiralama] = useState<any[]>([]);
+  const [yukleniyor, setYukleniyor] = useState(true);
+  const [aktifIsim, setAktifIsim] = useState("");
+  const [isimInput, setIsimInput] = useState("");
+  const [girisYapildi, setGirisYapildi] = useState(false);
 
   useEffect(() => {
-    const olasiAnahtarlar = ["lgs_soru_listesi", "sorular", "soruListesi", "kullanici_sorulari"];
-    let tumSorular: any[] = [];
-
-    for (let anahtar of olasiAnahtarlar) {
-      const veri = localStorage.getItem(anahtar);
-      if (veri) {
-        try {
-          const parsed = JSON.parse(veri);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            tumSorular = parsed;
-            break;
-          }
-        } catch (e) {}
-      }
-    }
-
-    if (tumSorular.length === 0) {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) {
-          const val = localStorage.getItem(key);
-          try {
-            const parsed = JSON.parse(val || "");
-            if (Array.isArray(parsed)) {
-              tumSorular = [...tumSorular, ...parsed];
-            }
-          } catch (e) {}
-        }
-      }
-    }
-
-    if (tumSorular.length > 0) {
-      const skorlarMap: { [key: string]: number } = {};
-      
-      tumSorular.forEach((item: any) => {
-        const isim = item.kullaniciAdi || item.kullanici_adi || item.isim || item.ad || item.ogrenciAdi || "İsimsiz";
-        const adet = Number(item.soruSayisi || item.soru_sayisi || item.adet || item.sayi || item.toplam || 0);
-
-        skorlarMap[isim] = (skorlarMap[isim] || 0) + adet;
-      });
-
-      const formatliListe: KullaniciSkor[] = Object.keys(skorlarMap).map((isim) => ({
-        kullanici_adi: isim,
-        toplam_soru: skorlarMap[isim],
-      }));
-
-      formatliListe.sort((a, b) => b.toplam_soru - a.toplam_soru);
-      setSiralama(formatliListe);
+    const kaydedilmisIsim = localStorage.getItem("lgs_gercek_kullanici_adi");
+    if (kaydedilmisIsim) {
+      setAktifIsim(kaydedilmisIsim);
+      setGirisYapildi(true);
+      verileriGetir(kaydedilmisIsim);
+    } else {
+      setYukleniyor(false);
     }
   }, []);
 
-  return (
-    <div style={{ padding: "40px 20px", maxWidth: "650px", margin: "0 auto", fontFamily: "system-ui, -apple-system, sans-serif" }}>
-      <h1 style={{ fontSize: "28px", fontWeight: "800", marginBottom: "25px", textAlign: "center", color: "#1e293b", letterSpacing: "-0.5px" }}>
-        🏆 LGS Soru Sıralaması
-      </h1>
+  async function verileriGetir(isimToFetch: string) {
+    setYukleniyor(true);
+    
+    // Soru sayısını al (localStorage'dan)
+    const cozulenSoru = Number(localStorage.getItem("lgs_cozulen_soru") || "0");
 
-      {siralama.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "30px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0", color: "#64748b" }}>
-          <p style={{ marginBottom: "8px", fontWeight: "500" }}>Henüz sıralamada görünecek bir veri bulunamadı.</p>
-          <p style={{ fontSize: "14px", color: "#94a3b8" }}>Lütfen "Soru Ekle" sayfasından adını yazarak soru gir ve sayfayı yenile.</p>
+    // Eğer isim zaten varsa güncelle, yoksa ekle (Upsert mantığı)
+    await client.from('kullanicilar').upsert({
+      isim: isimToFetch,
+      skor: cozulenSoru // Skor sütununu artık soru sayısı olarak kullanıyoruz
+    }, { onConflict: 'isim' });
+
+    // Sıralamayı soru sayısına (skor) göre çek
+    const { data: tumKullanicilar } = await client
+      .from('kullanicilar')
+      .select('*')
+      .order('skor', { ascending: false });
+
+    if (tumKullanicilar) {
+      // İsimleri benzersiz yap (sadece en yüksek skoru olanı tut)
+      const benzersiz = tumKullanicilar.reduce((acc, current) => {
+        const x = acc.find((item: any) => item.isim === current.isim);
+        if (!x) return acc.concat([current]);
+        return acc;
+      }, []);
+      setSiralama(benzersiz);
+    }
+    setYukleniyor(false);
+  }
+
+  const ismiKaydet = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isimInput.trim()) return;
+    
+    localStorage.setItem("lgs_gercek_kullanici_adi", isimInput.trim());
+    setAktifIsim(isimInput.trim());
+    setGirisYapildi(true);
+    verileriGetir(isimInput.trim());
+  };
+
+  return (
+    <div style={{ color: "#f8fafc", maxWidth: "800px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif" }}>
+      <div style={{ background: "#111827", padding: "24px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "20px" }}>
+        <h1 style={{ margin: "0 0 8px 0", fontSize: "24px" }}>📚 LGS Soru Takip Sıralaması</h1>
+      </div>
+
+      {!girisYapildi ? (
+        <div style={{ background: "#111827", padding: "30px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", textAlign: "center" }}>
+          <form onSubmit={ismiKaydet} style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+            <input 
+              type="text" 
+              value={isimInput} 
+              onChange={(e) => setIsimInput(e.target.value)} 
+              placeholder="Adını gir..."
+              style={{ padding: "12px", borderRadius: "8px", border: "1px solid #374151", background: "#1f2937", color: "#fff", width: "200px" }}
+            />
+            <button type="submit" style={{ padding: "12px 20px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer" }}>
+              Kaydet
+            </button>
+          </form>
         </div>
       ) : (
-        <div style={{ 
-          background: "#ffffff", 
-          borderRadius: "16px", 
-          boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)", 
-          border: "1px solid #e2e8f0",
-          overflow: "hidden" 
-        }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-            <thead>
-              <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0", color: "#475569", fontSize: "14px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                <th style={{ padding: "16px 20px", width: "15%" }}>Sıra</th>
-                <th style={{ padding: "16px 20px", width: "55%" }}>İsim / Kullanıcı</th>
-                <th style={{ padding: "16px 20px", width: "30%", textAlign: "right" }}>Toplam Soru</th>
-              </tr>
-            </thead>
-            <tbody>
-              {siralama.map((kisi, index) => {
-                // İlk 3 kişiye özel rozet/renk havası verebiliriz
-                let siraStili = { fontWeight: "600", color: "#334155" };
-                if (index === 0) siraStili = { fontWeight: "800", color: "#d97706" }; // 1. için altın sarısı
-                else if (index === 1) siraStili = { fontWeight: "800", color: "#475569" }; // 2. için gümüş
-                else if (index === 2) siraStili = { fontWeight: "800", color: "#b45309" }; // 3. için bronz
-
-                return (
-                  <tr 
-                    key={index} 
-                    style={{ 
-                      borderBottom: index !== siralama.length - 1 ? "1px solid #f1f5f9" : "none",
-                      transition: "background 0.2s"
-                    }}
-                  >
-                    <td style={{ padding: "16px 20px", ...siraStili }}>
-                      {index === 0 ? "🥇 #1" : index === 1 ? "🥈 #2" : index === 2 ? "🥉 #3" : `#${index + 1}`}
-                    </td>
-                    <td style={{ padding: "16px 20px", color: "#1e293b", fontWeight: "500" }}>
-                      {kisi.kullanici_adi}
-                    </td>
-                    <td style={{ padding: "16px 20px", textAlign: "right", fontWeight: "700", color: "#2563eb", fontSize: "16px" }}>
-                      {kisi.toplam_soru} <span style={{ fontSize: "12px", fontWeight: "normal", color: "#64748b" }}>soru</span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div style={{ background: "#111827", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+          {siralama.map((kisi, index) => (
+            <div key={index} style={{ display: "flex", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #374151" }}>
+              <span>{index + 1}. {kisi.isim}</span>
+              <span style={{ color: "#38bdf8" }}>{kisi.skor} Soru</span>
+            </div>
+          ))}
         </div>
       )}
     </div>

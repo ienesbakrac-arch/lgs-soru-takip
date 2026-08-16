@@ -45,7 +45,7 @@ const lgsMusaitlik = [
   }
 ];
 
-export default function KonularVeVideolarPage() {
+export default function KonularSayfasi() {
   const [secilenVideoArama, setSecilenVideoArama] = useState<string | null>(null);
 
   return (
@@ -54,7 +54,7 @@ export default function KonularVeVideolarPage() {
       <p style={{ color: "#94a3b8", marginBottom: "30px" }}>Bütün derslerin ünite ve konularını incele, dilediğin konunun YouTube video anlatımına tek tıkla ulaş.</p>
 
       {secilenVideoArama && (
-        <div style={{ background: "#0b1120", border: "1px solid rgba(56, 189, 248, 0.4)", padding: "20px", borderRadius: "16px", marginBottom: "30px" }}>
+        <div style={{ background: "#0f172a", border: "1px solid rgba(56, 189, 248, 0.4)", padding: "20px", borderRadius: "16px", marginBottom: "30px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
             <h3 style={{ margin: 0, fontSize: "16px", color: "#38bdf8" }}>🎬 Seçilen Konu Video Araması</h3>
             <button onClick={() => setSecilenVideoArama(null)} style={{ background: "#ef4444", color: "#fff", border: "none", padding: "6px 12px", borderRadius: "8px", cursor: "pointer", fontSize: "12px" }}>Kapat ✕</button>
@@ -73,8 +73,8 @@ export default function KonularVeVideolarPage() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         {lgsMusaitlik.map((dersGrup, index) => (
-          <div key={index} style={{ background: "#0b1120", border: "1px solid rgba(255,255,255,0.06)", padding: "20px", borderRadius: "16px" }}>
-            <h2 style={{ fontSize: "18px", color: "#38bdf8", marginBottom: "14px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "8px" }}>{dersGrup.ders}</h2>
+          <div key={index} style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", padding: "20px", borderRadius: "16px" }}>
+            <h2 style={{ fontSize: "18px", color: "#38bdf8", marginBottom: "14px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "8px" }}>{dersGrup.ders}</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {dersGrup.uniteler.map((unite, uIndex) => (
                 <div key={uIndex} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#1e293b", padding: "12px 16px", borderRadius: "10px" }}>

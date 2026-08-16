@@ -3,33 +3,61 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function AnaSayfa() {
-  const [haftalikHedef, setHaftalikHedef] = useState("100");
+  const [haftalikHedef, setHaftalikHedef] = useState("500");
   const [toplamSoru, setToplamSoru] = useState(0);
   const [kullaniciAdi, setKullaniciAdi] = useState("Şampiyon");
   const [calismaSuresi, setCalismaSuresi] = useState(0);
 
   useEffect(() => {
-    const hedef = localStorage.getItem("lgs_haftalik_hedef");
-    if (hedef) setHaftalikHedef(hedef);
+    const verileriCek = () => {
+      // Haftalık hedefin olası tüm anahtarlarını kontrol ediyoruz (500 kalma sorunu burada çözülüyor)
+      const hedef = 
+        localStorage.getItem("lgs_haftalik_hedef") || 
+        localStorage.getItem("haftalik_hedef") || 
+        localStorage.getItem("haftalikHedef") || 
+        localStorage.getItem("lgs_toplam_hedef") || 
+        localStorage.getItem("hedef") || 
+        localStorage.getItem("lgs_hedef") || 
+        localStorage.getItem("hedef_sayisi") || 
+        "500";
+      
+      setHaftalikHedef(hedef);
 
-    const ad = localStorage.getItem("lgs_gercek_kullanici_adi");
-    if (ad) setKullaniciAdi(ad);
+      const ad = localStorage.getItem("lgs_gercek_kullanici_adi") || localStorage.getItem("kullanici_adi") || "Şampiyon";
+      setKullaniciAdi(ad);
 
-    const sure = localStorage.getItem("lgs_toplam_calisma_suresi");
-    if (sure) setCalismaSuresi(Number(sure));
+      const sure = localStorage.getItem("lgs_toplam_calisma_suresi") || localStorage.getItem("toplam_calisma_suresi");
+      if (sure) setCalismaSuresi(Number(sure));
 
-    const yanlislar = localStorage.getItem("lgs_yanlislar");
-    if (yanlislar) {
-      try {
-        const parsed = JSON.parse(yanlislar);
-        if (Array.isArray(parsed)) {
-          setToplamSoru(parsed.length);
+      const cozulen = localStorage.getItem("lgs_cozulen_soru") || localStorage.getItem("cozulen_soru");
+      if (cozulen) {
+        setToplamSoru(Number(cozulen));
+      } else {
+        const yanlislar = localStorage.getItem("lgs_yanlislar");
+        if (yanlislar) {
+          try {
+            const parsed = JSON.parse(yanlislar);
+            if (Array.isArray(parsed)) setToplamSoru(parsed.length);
+          } catch (e) {}
         }
-      } catch (e) {}
-    }
+      }
+    };
+
+    verileriCek();
+
+    // Sayfa odaklandığında veya hedef değiştirildiğinde anında yansıtması için kontrol
+    window.addEventListener("focus", verileriCek);
+    window.addEventListener("storage", verileriCek);
+    const interval = setInterval(verileriCek, 400);
+
+    return () => {
+      window.removeEventListener("focus", verileriCek);
+      window.removeEventListener("storage", verileriCek);
+      clearInterval(interval);
+    };
   }, []);
 
-  const hedefSayi = Number(haftalikHedef) || 100;
+  const hedefSayi = Number(haftalikHedef) || 500;
   const yuzde = Math.min(Math.round((toplamSoru / hedefSayi) * 100), 100);
 
   return (
@@ -70,7 +98,6 @@ export default function AnaSayfa() {
           <span style={{ fontSize: "13px", color: "#94a3b8" }}>Hedef Tamamlama</span>
           <div style={{ fontSize: "24px", fontWeight: "bold", color: "#ec4899", marginTop: "8px" }}>%{yuzde}</div>
         </div>
-
       </div>
 
       {/* İLERLEME ÇUĞU */}
@@ -96,7 +123,7 @@ export default function AnaSayfa() {
 
         <Link href="/notlar" style={{ backgroundColor: "#111827", padding: "18px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", color: "#fff", display: "block" }}>
           <div style={{ fontSize: "20px", marginBottom: "6px" }}>📝</div>
-          <div style={{ fontWeight: 600, fontSize: "15px" }}>Hızlı Notlar</div>
+          <div style={{ fontWeight: "600", fontSize: "15px" }}>Hızlı Notlar</div>
           <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>Formülleri ve notları kaydet</div>
         </Link>
 

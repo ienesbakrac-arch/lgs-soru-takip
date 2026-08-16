@@ -1,12 +1,11 @@
+"use client";
 import Link from "next/link";
+import { useState } from "react";
 import "./globals.css";
 
-export const metadata = {
-  title: "LGS Asistanı & Yapay Zeka Koçu",
-  description: "Staj ve LGS hazırlık platformu",
-};
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const [mobilMenuAcik, setMobilMenuAcik] = useState(false);
+
   const linkStil = {
     display: "flex",
     alignItems: "center",
@@ -23,46 +22,95 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="tr">
-      <body style={{ margin: 0, background: "#060913", color: "#f8fafc", fontFamily: "sans-serif", display: "flex", height: "100vh", overflow: "hidden" }}>
+      <body style={{ margin: 0, background: "#060913", color: "#f8fafc", fontFamily: "sans-serif", display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
         
-        {/* ŞIK SOL PANEL */}
-        <nav style={{ width: "270px", background: "#0b1120", borderRight: "1px solid rgba(255,255,255,0.06)", padding: "20px 14px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+        {/* MOBİL ÜST BAR (Sadece telefon ekranlarında görünür) */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0b1120", padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", minHeight: "60px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "32px", height: "32px", background: "linear-gradient(135deg, #3b82f6, #1d4ed8)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>🎯</div>
+            <span style={{ fontSize: "15px", fontWeight: 700, color: "#ffffff" }}>LGS & Staj Koçu</span>
+          </div>
+          <button 
+            onClick={() => setMobilMenuAcik(!mobilMenuAcik)}
+            style={{ background: "#1e293b", color: "#fff", border: "none", padding: "8px 12px", borderRadius: "8px", cursor: "pointer", fontSize: "16px" }}
+          >
+            {mobilMenuAcik ? "✕ Kapat" : "☰ Menü"}
+          </button>
+        </div>
+
+        <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
           
-          {/* Logo / Başlık Alanı */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px", padding: "0 6px" }}>
-            <div style={{ width: "38px", height: "38px", background: "linear-gradient(135deg, #3b82f6, #1d4ed8)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)" }}>🎯</div>
-            <div>
-              <h2 style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#ffffff", letterSpacing: "0.3px" }}>LGS & Staj Koçu</h2>
-              <span style={{ fontSize: "11px", color: "#64748b" }}>Akıllı Öğrenci Asistanı</span>
+          {/* SOL PANEL (Mobilde açılır/kapanır, masaüstünde sabit) */}
+          <nav style={{ 
+            width: "270px", 
+            background: "#0b1120", 
+            borderRight: "1px solid rgba(255,255,255,0.06)", 
+            padding: "20px 14px", 
+            display: "flex", 
+            flexDirection: "column", 
+            boxSizing: "border-box",
+            position: mobilMenuAcik ? "absolute" : "relative",
+            top: 0,
+            left: 0,
+            height: "100%",
+            zIndex: 100,
+            transform: mobilMenuAcik ? "translateX(0)" : "translateX(-100%)",
+            transition: "transform 0.3s ease",
+            boxShadow: mobilMenuAcik ? "5px 0 25px rgba(0,0,0,0.5)" : "none"
+          }}
+          // Masaüstü ekranlarda otomatik görünmesi için stil ayarı (CSS media query yerine basit mantık)
+          className="sol-panel"
+          >
+            
+            {/* Logo / Başlık Alanı (Masaüstü için) */}
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px", padding: "0 6px" }}>
+              <div style={{ width: "38px", height: "38px", background: "linear-gradient(135deg, #3b82f6, #1d4ed8)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>🎯</div>
+              <div>
+                <h2 style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#ffffff" }}>LGS & Staj Koçu</h2>
+                <span style={{ fontSize: "11px", color: "#64748b" }}>Akıllı Öğrenci Asistanı</span>
+              </div>
             </div>
-          </div>
-          
-          {/* Menü Linkleri */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px", overflowY: "auto", paddingRight: "4px" }}>
-            <Link href="/" style={linkStil}><span>🏠</span> Ana Sayfa</Link>
-            <Link href="/soru-ekle" style={linkStil}><span>➕</span> Soru Ekle</Link>
-            <Link href="/deneme-kaydedici" style={linkStil}><span>📝</span> Deneme Kaydedici</Link>
-            <Link href="/lgs-hesapla" style={linkStil}><span>🧮</span> LGS Puan Hesapla</Link>
-            <Link href="/siralama" style={linkStil}><span>🥇</span> Sıralama</Link>
-            <Link href="/haftalik-hedef" style={linkStil}><span>🎯</span> Haftalık Hedef</Link>
-            <Link href="/yanlislarim" style={linkStil}><span>❌</span> Yanlış Sorularım</Link>
-            <Link href="/konular" style={linkStil}><span>📚</span> Konular & Videolar</Link>
-            <Link href="/pomodoro" style={linkStil}><span>🍅</span> Pomodoro (40/10)</Link>
-            <Link href="/rozetler" style={linkStil}><span>🏆</span> Rozet Koleksiyonu</Link>
-            <Link href="/notlar" style={linkStil}><span>📒</span> Hızlı Notlar</Link>
-            <Link href="/yapay-zeka" style={linkStil}><span>🎙️</span> Sesli Yapay Zeka Koçu</Link>
-          </div>
+            
+            {/* Menü Linkleri (En önemli ve sık kullanılanlar üst sıralarda) */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px", overflowY: "auto", paddingRight: "4px" }} onClick={() => setMobilMenuAcik(false)}>
+              <Link href="/" style={linkStil}><span>🏠</span> Ana Sayfa</Link>
+              <Link href="/soru-ekle" style={linkStil}><span>➕</span> Soru Ekle</Link>
+              <Link href="/haftalik-hedef" style={linkStil}><span>🎯</span> Haftalık Hedef</Link>
+              <Link href="/konular" style={linkStil}><span>📚</span> Konular & Videolar</Link>
+              <Link href="/pomodoro" style={linkStil}><span>🍅</span> Pomodoro (40/10)</Link>
+              <Link href="/deneme-kaydedici" style={linkStil}><span>📝</span> Deneme Kaydedici</Link>
+              <Link href="/lgs-hesapla" style={linkStil}><span>🧮</span> LGS Puan Hesapla</Link>
+              <Link href="/yanlislarim" style={linkStil}><span>❌</span> Yanlış Sorularım</Link>
+              <Link href="/rozetler" style={linkStil}><span>🏆</span> Rozet Koleksiyonu</Link>
+              <Link href="/notlar" style={linkStil}><span>📒</span> Hızlı Notlar</Link>
+              <Link href="/yapay-zeka" style={linkStil}><span>🎙️</span> Sesli Yapay Zeka Koçu</Link>
+            </div>
 
-          {/* Alt Bilgi */}
-          <div style={{ fontSize: "11px", color: "#475569", textAlign: "center", padding: "12px 0 0 0", borderTop: "1px solid rgba(255,255,255,0.04)", marginTop: "10px" }}>
-            Sürüm 2.5 • Özel Tasarım ✨
-          </div>
-        </nav>
+            <div style={{ fontSize: "11px", color: "#475569", textAlign: "center", padding: "12px 0 0 0", borderTop: "1px solid rgba(255,255,255,0.04)", marginTop: "10px" }}>
+              Sürüm 2.6 • Mobil Uyumlu ✨
+            </div>
+          </nav>
 
-        {/* İÇERİK ALANI */}
-        <main style={{ flex: 1, padding: "35px", overflowY: "auto", boxSizing: "border-box", background: "#090d1a" }}>
-          {children}
-        </main>
+          {/* İÇERİK ALANI */}
+          <main style={{ flex: 1, padding: "25px", overflowY: "auto", boxSizing: "border-box", background: "#090d1a" }} onClick={() => setMobilMenuAcik(false)}>
+            {children}
+          </main>
+        </div>
+
+        {/* CSS ile masaüstünde menünün otomatik görünmesini sağlayan küçük stil */}
+        <style jsx global>{`
+          @media (min-width: 768px) {
+            nav.sol-panel {
+              transform: translateX(0) !important;
+              position: relative !important;
+              box-shadow: none !important;
+            }
+            /* Mobildeki üst barı masaüstünde gizle */
+            div:has(> button) {
+              display: none !important;
+            }
+          }
+        `}</style>
       </body>
     </html>
   );

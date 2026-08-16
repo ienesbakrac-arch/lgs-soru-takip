@@ -1,11 +1,10 @@
-"use client"; // Bu satır en üstte olmalı
+"use client";
 import Link from "next/link";
 import { useEffect } from "react";
 import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   
-  // İSİM SORGULAMA MANTIĞI
   useEffect(() => {
     const isim = localStorage.getItem("lgs_gercek_kullanici_adi");
     if (!isim) {
@@ -35,12 +34,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="tr">
       <body style={{ margin: 0, background: "#090d16", color: "#f8fafc", fontFamily: "sans-serif" }}>
         
-        {/* ANA DÜZEN: Mobilde alt alta, bilgisayarda yan yana */}
-        <div className="ana-layout" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+        <div className="ana-layout">
           
-          {/* SOL MENÜ / MOBİL ÜST MENÜ */}
-          <nav className="mobil-menu" style={{ width: "260px", background: "#0f172a", borderRight: "1px solid rgba(255,255,255,0.08)", padding: "20px 12px", display: "flex", flexDirection: "column", overflowY: "auto", boxSizing: "border-box", flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", padding: "0 6px" }}>
+          <nav className="mobil-menu">
+            <div className="logo-alani" style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", padding: "0 6px" }}>
               <div style={{ width: "34px", height: "34px", backgroundColor: "#2563eb", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>🎯</div>
               <div>
                 <h2 style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#ffffff" }}>LGS Asistanı</h2>
@@ -48,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
             
-            <div className="menu-linkler" style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
+            <div className="menu-linkler">
               <Link href="/" style={linkStil}><span>🏠</span> Ana Sayfa</Link>
               <Link href="/soru-ekle" style={linkStil}><span>➕</span> Soru Ekle</Link>
               <Link href="/deneme-kaydedici" style={linkStil}><span>📝</span> Deneme Kaydedici</Link>
@@ -63,46 +60,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/yapay-zeka" style={linkStil}><span>🎙️</span> Sesli Yapay Zeka Koçu</Link>
             </div>
 
-            <div style={{ fontSize: "11px", color: "#64748b", textAlign: "center", padding: "10px 0", borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: "10px" }}>
+            <div className="surum-bilgisi" style={{ fontSize: "11px", color: "#64748b", textAlign: "center", padding: "10px 0", borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: "10px" }}>
               V 2.0 - Kararlı Sürüm 🚀
             </div>
           </nav>
 
-          {/* İÇERİK ALANI */}
-          <main style={{ flex: 1, padding: "30px", overflowY: "auto", boxSizing: "border-box", height: "100vh" }}>
+          <main className="icerik-alani">
             {children}
           </main>
         </div>
 
-        {/* MOBİL UYUMLULUK İÇİN CSS (Bilgisayarda sol, telefonda üst menü yapar) */}
-        <style jsx global>{`
-          @media (max-width: 768px) {
-            .ana-layout {
-              flex-direction: column !important;
-              height: 100vh !important;
-            }
-            .mobil-menu {
-              width: 100% !important;
-              height: 110px !important;
-              flex-direction: row !important;
-              align-items: center !important;
-              overflow-x: auto !important;
-              overflow-y: hidden !important;
-              gap: 15px !important;
-              padding: 10px !important;
-              border-right: none !important;
-              border-bottom: 1px solid rgba(255,255,255,0.08) !important;
-            }
-            .mobil-menu > div:first-child,
-            .mobil-menu > div:last-child {
-              display: none !important; /* Telefonda logoyu gizleyip yerden kazanalım ki menü yatay kaysın */
-            }
-            .menu-linkler {
-              flex-direction: row !important;
-              gap: 8px !important;
-            }
-          }
-        `}</style>
       </body>
     </html>
   );

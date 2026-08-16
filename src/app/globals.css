@@ -1,29 +1,73 @@
-:root {
-  --bg-primary: #090d16;
-  --bg-card: #111827;
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --border-color: rgba(255, 255, 255, 0.1);
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- BİLGİSAYAR GÖRÜNÜMÜ --- */
+.ana-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* Telefonlar için duyarlı tasarım (Responsive) */
+.mobil-menu {
+  width: 260px;
+  background: #0f172a;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.menu-linkler {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.icerik-alani {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  height: 100vh;
+}
+
+/* --- TELEFON GÖRÜNÜMÜ --- */
 @media (max-width: 768px) {
-  .layout-container {
+  .ana-layout {
     flex-direction: column !important;
+    height: 100vh !important;
   }
-  .sidebar {
+  
+  .mobil-menu {
     width: 100% !important;
-    height: auto !important;
+    height: 90px !important;
     flex-direction: row !important;
-    overflow-x: auto;
+    align-items: center !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 10px !important;
     padding: 10px !important;
-    gap: 15px;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
   }
-  .sidebar nav {
+  
+  .logo-alani, 
+  .surum-bilgisi {
+    display: none !important;
+  }
+  
+  .menu-linkler {
     flex-direction: row !important;
-    overflow-x: auto;
+    gap: 8px !important;
   }
-  .sidebar-footer {
-    display: none !important; /* Telefonda yer kaplamaması için alt kart gizlenir */
+  
+  .icerik-alani {
+    height: calc(100vh - 90px) !important;
+    padding: 15px !important;
   }
 }

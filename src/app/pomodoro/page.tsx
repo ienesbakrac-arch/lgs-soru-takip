@@ -1,82 +1,92 @@
 "use client";
 import { useState, useEffect } from "react";
 
-export default function Pomodoro() {
-  const [dakika, setDakika] = useState(25);
-  const [saniye, setSaniye] = useState(0);
+export default function PomodoroPage() {
+  const CALISMA_SURESI = 40 * 60; // 40 dakika
+  const DINLENME_SURESI = 10 * 60; // 10 dakika
+
+  const [kalanSaniye, setKalanSaniye] = useState(CALISMA_SURESI);
+  const [mod, setMod] = useState<"calisma" | "dinlenme">("calisma");
   const [aktif, setAktif] = useState(false);
-  const [toplamDakika, setToplamDakika] = useState(0);
 
   useEffect(() => {
-    // Kayıtlı toplam çalışma süresini alalım
-    const kayitliSure = localStorage.getItem("lgs_toplam_calisma_suresi");
-    if (kayitliSure) {
-      setToplamDakika(Number(kayitliSure));
-    }
-  }, []);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (aktif) {
-      interval = setInterval(() => {
-        if (saniye > 0) {
-          setSaniye(saniye - 1);
-        } else if (dakika > 0) {
-          setDakika(dakika - 1);
-          setSaniye(59);
-        } else {
-          setAktif(false);
-          alert("Tebrikler! Bir Pomodoro seansını tamamladın! 🎉");
-          const yeniSure = toplamDakika + 25;
-          setToplamDakika(yeniSure);
-          localStorage.setItem("lgs_toplam_calisma_suresi", yeniSure.toString());
-          setDakika(25);
-          setSaniye(0);
-        }
+    let timer: any = null;
+    if (aktif && kalanSaniye > 0) {
+      timer = setInterval(() => {
+        setKalanSaniye((s) => s - 1);
       }, 1000);
-    } else if (!aktif && interval) {
-      clearInterval(interval);
+    } else if (kalanSaniye === 0) {
+      if (mod === "calisma") {
+        alert("🎉 40 dakikalık çalışma bitti! Şimdi 10 dakika dinlenme zamanı.");
+        setMod("dinlenme");
+        setKalanSaniye(DINLENME_SURESI);
+      } else {
+        alert("⚡ Dinlenme bitti! Tekrar çalışma vakti, hadi başlayaalım!");
+        setMod("calisma");
+        setKalanSaniye(CALISMA_SURESI);
+      }
+      setAktif(false);
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [aktif, dakika, saniye, toplamDakika]);
+    return () => clearInterval(timer);
+  }, [aktif, kalanSaniye, mod]);
 
-  const sureyiSifirla = () => {
+  const formatiDuzenle = (saniye: number) => {
+    const dk = Math.floor(saniye / 60);
+    const sn = saniye % 60;
+    return `${dk.toString().padStart(2, "0")}:${sn.toString().padStart(2, "0")}`;
+  };
+
+  const moduDegistir = (yeniMod: "calisma" | "dinlenme") => {
     setAktif(false);
-    setDakika(25);
-    setSaniye(0);
+    setMod(yeniMod);
+    setKalanSaniye(yeniMod === "calisma" ? CALISMA_SURESI : DINLENME_SURESI);
   };
 
   return (
-    <div style={{ color: "#f8fafc", maxWidth: "600px", textAlign: "center" }}>
-      <h1 style={{ fontSize: "24px", marginBottom: "8px" }}>🍅 Pomodoro Çalışma Asistanı</h1>
-      <p style={{ color: "#94a3b8", marginBottom: "30px" }}>25 dakika odaklan, 5 dakika mola ver. Başarı adım adım gelir!</p>
+    <div style={{ maxWidth: "650px", margin: "0 auto", textAlign: "center" }}>
+      <h1 style={{ fontSize: "28px", fontWeight: "700", marginBottom: "8px" }}>🍅 Pomodoro Odak Asistanı</h1>
+      <p style={{ color: "#94a3b8", marginBottom: "30px" }}>Staj ve LGS temposu için **40 dk Çalışma / 10 dk Dinlenme** kuralı.</p>
 
-      <div style={{ backgroundColor: "#111827", padding: "40px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "24px" }}>
-        <div style={{ fontSize: "64px", fontWeight: "bold", color: "#38bdf8", marginBottom: "20px" }}>
-          {String(dakika).padStart(2, "0")}:{String(saniye).padStart(2, "0")}
+      {/* Mod Seçim Butonları */}
+      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "25px" }}>
+        <button 
+          onClick={() => moduDegistir("calisma")}
+          style={{ padding: "10px 20px", borderRadius: "10px", border: "none", background: mod === "calisma" ? "#2563eb" : "#1e293b", color: "#fff", fontWeight: "600", cursor: "pointer" }}
+        >
+          Çalışma (40 dk) 📚
+        </button>
+        <button 
+          onClick={() => moduDegistir("dinlenme")}
+          style={{ padding: "10px 20px", borderRadius: "10px", border: "none", background: mod === "dinlenme" ? "#22c55e" : "#1e293b", color: "#fff", fontWeight: "600", cursor: "pointer" }}
+        >
+          Dinlenme (10 dk) ☕
+        </button>
+      </div>
+
+      {/* Sayaç Kartı */}
+      <div style={{ background: "#0b1120", border: "1px solid rgba(255,255,255,0.06)", padding: "45px", borderRadius: "20px", boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
+        <span style={{ display: "inline-block", padding: "6px 16px", borderRadius: "20px", background: mod === "calisma" ? "rgba(37, 99, 235, 0.15)" : "rgba(34, 197, 94, 0.15)", color: mod === "calisma" ? "#38bdf8" : "#4ade80", fontSize: "13px", fontWeight: "600", marginBottom: "20px" }}>
+          {mod === "calisma" ? "🔥 Odaklanma Vakti" : "☕ Mola Zamanı"}
+        </span>
+
+        <div style={{ fontSize: "64px", fontWeight: "800", color: "#f8fafc", fontFamily: "monospace", marginBottom: "30px", letterSpacing: "2px" }}>
+          {formatiDuzenle(kalanSaniye)}
         </div>
-
-        <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
-          <button 
-            onClick={() => setAktif(!aktif)} 
-            style={{ backgroundColor: aktif ? "#dc2626" : "#2563eb", color: "#fff", border: "none", padding: "12px 24px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
-          >
-            {aktif  ? "Durdur ⏸️" : "Başlat ▶️"}
-          </button>
-          <button 
-            onClick={sureyiSifirla} 
-            style={{ backgroundColor: "#1f2937", color: "#f87171", border: "1px solid rgba(255,255,255,0.1)", padding: "12px 20px", borderRadius: "8px", fontWeight: 600, cursor: "pointer", fontSize: "16px" }}
-          >
+        
+        <div style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
+          {!aktif ? (
+            <button onClick={() => setAktif(true)} style={{ background: "#2563eb", color: "#fff", border: "none", padding: "14px 28px", borderRadius: "12px", fontWeight: "600", cursor: "pointer", fontSize: "15px" }}>
+              Başlat ▶
+            </button>
+          ) : (
+            <button onClick={() => setAktif(false)} style={{ background: "#eab308", color: "#000", border: "none", padding: "14px 28px", borderRadius: "12px", fontWeight: "600", cursor: "pointer", fontSize: "15px" }}>
+              Durdur ⏸
+            </button>
+          )}
+          <button onClick={() => { setAktif(false); setKalanSaniye(mod === "calisma" ? CALISMA_SURESI : DINLENME_SURESI); }} style={{ background: "#334155", color: "#fff", border: "none", padding: "14px 28px", borderRadius: "12px", fontWeight: "600", cursor: "pointer", fontSize: "15px" }}>
             Sıfırla 🔄
           </button>
         </div>
-      </div>
-
-      <div style={{ backgroundColor: "rgba(37, 99, 235, 0.1)", border: "1px solid rgba(37, 99, 235, 0.3)", padding: "16px", borderRadius: "12px" }}>
-        <span style={{ fontSize: "14px", color: "#93c5fd" }}>Bugüne Kadar Toplam Çalışma Süren: </span>
-        <strong style={{ fontSize: "18px", color: "#ffffff" }}>{toplamDakika} Dakika ⏱️</strong>
       </div>
     </div>
   );

@@ -14,7 +14,8 @@ export default function SoruEkleSayfasi() {
 
   const soruEkleKaydet = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adet || Number(adet) <= 0) {
+    const soruAdedi = Number(adet);
+    if (!adet || soruAdedi <= 0) {
       setMesaj("⚠️ Lütfen geçerli bir soru sayısı gir!");
       return;
     }
@@ -23,14 +24,14 @@ export default function SoruEkleSayfasi() {
     setMesaj("");
 
     try {
-      // 1. LocalStorage güvenli kontrolü ve güncellemesi
       if (typeof window !== "undefined") {
         const mevcutSoru = Number(localStorage.getItem("lgs_cozulen_soru") || "0");
-        const yeniToplam = mevcutSoru + Number(adet);
+        const yeniToplam = mevcutSoru + soruAdedi;
         localStorage.setItem("lgs_cozulen_soru", yeniToplam.toString());
 
-        // 2. Supabase sıralama tablosunu da otomatik güncelle
         const isim = localStorage.getItem("lgs_gercek_kullanici_adi") || "Şampiyon";
+        
+        // Supabase veritabanına kaydet (Skor sıfırdan başlar ve eklenenle toplanır)
         await client.from('kullanicilar').upsert({
           isim: isim,
           skor: yeniToplam
@@ -51,7 +52,7 @@ export default function SoruEkleSayfasi() {
     <div style={{ color: "#f8fafc", maxWidth: "600px", margin: "0 auto", fontFamily: "sans-serif" }}>
       <div style={{ background: "#111827", padding: "24px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "20px" }}>
         <h1 style={{ margin: "0 0 8px 0", fontSize: "22px" }}>➕ Soru Ekle</h1>
-        <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Çözdüğün soruları buraya girerek hem hafızaya kaydet hem de sıralamada zirveye oyna!</p>
+        <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Çözdüğün soruları sıfırdan başlayarak kaydet ve sıralamada yerini al!</p>
       </div>
 
       <form onSubmit={soruEkleKaydet} style={{ background: "#111827", padding: "24px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: "15px" }}>

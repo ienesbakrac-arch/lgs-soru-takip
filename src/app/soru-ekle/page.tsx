@@ -24,35 +24,38 @@ export default function SoruEkleSayfasi() {
     setMesaj("");
 
     try {
-      if (typeof window !== "undefined") {
-        const mevcutSoru = Number(localStorage.getItem("lgs_cozulen_soru") || "0");
-        const yeniToplam = mevcutSoru + soruAdedi;
-        localStorage.setItem("lgs_cozulen_soru", yeniToplam.toString());
+      const isim = typeof window !== "undefined" ? localStorage.getItem("lgs_gercek_kullanici_adi") || "Şampiyon" : "Şampiyon";
+      const mevcutSoru = Number(localStorage.getItem("lgs_cozulen_soru") || "0");
+      const yeniToplam = mevcutSoru + soruAdedi;
+      
+      // LocalStorage güncelle
+      localStorage.setItem("lgs_cozulen_soru", yeniToplam.toString());
 
-        const isim = localStorage.getItem("lgs_gercek_kullanici_adi") || "Şampiyon";
-        
-        // Supabase veritabanına kaydet (Skor sıfırdan başlar ve eklenenle toplanır)
-        await client.from('kullanicilar').upsert({
-          isim: isim,
-          skor: yeniToplam
-        }, { onConflict: 'isim' });
+      // Supabase'e gönderirken hata denetimi ekleyelim
+      const { error } = await client
+        .from('kullanicilar')
+        .upsert({ isim: isim, skor: yeniToplam }, { onConflict: 'isim' });
+
+      if (error) {
+        console.error("Supabase Hatası:", error);
+        setMesaj("❌ Veritabanına kaydedilemedi: " + error.message);
+      } else {
+        setMesaj("✅ Sorular başarıyla kaydedildi ve sıralamaya eklendi!");
+        setAdet("");
       }
-
-      setMesaj("✅ Sorular başarıyla kaydedildi ve sıralamaya işlendi!");
-      setAdet("");
     } catch (err) {
-      console.error(err);
-      setMesaj("❌ Kaydedilirken bir hata oluştu, tekrar dene.");
+      console.error("Genel Hata:", err);
+      setMesaj("❌ Beklenmeyen bir hata oluştu.");
     } finally {
       setYukleniyor(false);
     }
   };
 
   return (
-    <div style={{ color: "#f8fafc", maxWidth: "600px", margin: "0 auto", fontFamily: "sans-serif" }}>
+    <div style={{ color: "#f8fafc", maxWidth: "600px", margin: "0 auto", fontFamily: "sans-serif", padding: "20px" }}>
       <div style={{ background: "#111827", padding: "24px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: "20px" }}>
         <h1 style={{ margin: "0 0 8px 0", fontSize: "22px" }}>➕ Soru Ekle</h1>
-        <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Çözdüğün soruları sıfırdan başlayarak kaydet ve sıralamada yerini al!</p>
+        <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>Çözdüğün soruları kaydet ve sıralamada anında yerini al!</p>
       </div>
 
       <form onSubmit={soruEkleKaydet} style={{ background: "#111827", padding: "24px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: "15px" }}>

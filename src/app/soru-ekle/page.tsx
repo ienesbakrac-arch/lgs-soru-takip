@@ -28,13 +28,30 @@ export default function SoruEkleSayfasi() {
       const mevcutSoru = Number(localStorage.getItem("lgs_cozulen_soru") || "0");
       const yeniToplam = mevcutSoru + soruAdedi;
       
-      // LocalStorage güncelle
+      // 1. LocalStorage güncelle
       localStorage.setItem("lgs_cozulen_soru", yeniToplam.toString());
 
-      // Supabase'e gönderirken hata denetimi ekleyelim
-      const { error } = await client
+      // 2. Bu isimle kullanıcı daha önce veritabanına eklenmiş mi kontrol et
+      const { data: mevcutKayitlar } = await client
         .from('kullanicilar')
-        .upsert({ isim: isim, skor: yeniToplam }, { onConflict: 'isim' });
+        .select('*')
+        .eq('isim', isim);
+
+      let error;
+      if (mevcutKayitlar && mevcutKayitlar.length > 0) {
+        // Eğer varsa mevcut kaydı güncelle (Update)
+        const res = await client
+          .from('kullanicilar')
+          .update({ skor: yeniToplam })
+          .eq('isim', isim);
+        error = res.error;
+      } else {
+        // Eğer yoksa yeni kayıt ekle (Insert)
+        const res = await client
+          .from('kullanicilar')
+          .insert([{ isim: isim, skor: yeniToplam }]);
+        error = res.error;
+      }
 
       if (error) {
         console.error("Supabase Hatası:", error);

@@ -1,181 +1,172 @@
 "use client";
 import { useState, useEffect } from "react";
 
-interface Mesaj {
-  gonderen: "kullanici" | "ai";
-  metin: string;
-}
-
-export default function SesliAsistanPage() {
-  const [mesajlar, setMesajlar] = useState<Mesaj[]>([
-    { 
-      gonderen: "ai", 
-      metin: "Selam! Ben senin sesli LGS ve Staj Asistanınım. İstersen mikrofona basarak konuşabilir ya da yazabilirsin. Sana nasıl yardımcı olayım? 🎙️🤖" 
-    }
-  ]);
-  const [inputMetin, setInputMetin] = useState("");
+export default function TamYetkiliYapayZekaKocu() {
+  const [mesajlar, setMesajlar] = useState<any[]>([]);
+  const [input, setInput] = useState("");
   const [yukleniyor, setYukleniyor] = useState(false);
-  const [aktifHedef, setAktifHedef] = useState<string>("Belirlenmedi");
-  const [dinleniyor, setDinleniyor] = useState(false);
+  const [dinliyor, setDinliyor] = useState(false);
+  const [sesliOkuyor, setSesliOkuyor] = useState(true);
+  
+  const [siteVerileri, setSiteVerileri] = useState({
+    isim: "Şampiyon",
+    cozulenSoru: 0,
+    hedef: 500,
+    notlar: "",
+  });
 
   useEffect(() => {
-    const kayitliHedef = localStorage.getItem("lgs_haftalik_hedef_ai");
-    if (kayitliHedef) {
-      setAktifHedef(kayitliHedef);
-    }
+    verileriYukle();
   }, []);
 
-  // Metni sesli okuma fonksiyonu (Text-to-Speech)
-  const sesliSoyle = (metin: string) => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel(); // Önceki ses varsa durdur
-      const konusma = new SpeechSynthesisUtterance(metin);
-      konusma.lang = "tr-TR";
-      konusma.rate = 1.0;
-      window.speechSynthesis.speak(konusma);
-    }
+  const verileriYukle = () => {
+    const isim = localStorage.getItem("lgs_gercek_kullanici_adi") || "Şampiyon";
+    const cozulenSoru = Number(localStorage.getItem("lgs_cozulen_soru") || "0");
+    const hedef = Number(localStorage.getItem("lgs_haftalik_hedef") || "500");
+    const notlar = localStorage.getItem("lgs_notlar") || "Henüz not eklenmemiş.";
+
+    setSiteVerileri({ isim, cozulenSoru, hedef, notlar });
+
+    setMesajlar([
+      {
+        rol: "ai",
+        icerik: `Selam ${isim}! Ben tam yetkili LGS Koçunum. 🚀 Haftalık hedeflerini güncelleyebilir, notlarını düzenleyebilir veya sorularını yönetebilirim. Bana komut verebilirsin!`
+      }
+    ]);
   };
 
-  // Mikrofondan ses dinleme fonksiyonu (Speech Recognition)
+  const sesliSoyle = (text: string) => {
+    if (!sesliOkuyor || typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "tr-TR";
+    window.speechSynthesis.speak(utterance);
+  };
+
   const sesliDinleBaslat = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Tarayıcınız ses tanıma özelliğini desteklemiyor. Lütfen Chrome kullanın.");
+      alert("Tarayıcın sesli komut özelliğini desteklemiyor.");
       return;
     }
-
     const recognition = new SpeechRecognition();
     recognition.lang = "tr-TR";
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      setDinleniyor(true);
-    };
-
+    recognition.onstart = () => setDinliyor(true);
+    recognition.onend = () => setDinliyor(false);
+    recognition.onerror = () => setDinliyor(false);
     recognition.onresult = (event: any) => {
-      const sesliYazi = event.results[0][0].transcript;
-      setInputMetin(sesliYazi);
-      setDinleniyor(false);
+      const soz = event.results[0][0].transcript;
+      setInput(soz);
+      komutIsle(soz);
     };
-
-    recognition.onerror = () => {
-      setDinleniyor(false);
-    };
-
-    recognition.onend = () => {
-      setDinleniyor(false);
-    };
-
     recognition.start();
   };
 
-  const mesajGonder = (e?: React.FormEvent) => {
+  const mesajGonder = (e: React.FormEvent | null, gelenMetin?: string) => {
     if (e) e.preventDefault();
-    if (!inputMetin.trim()) return;
+    const metin = gelenMetin || input;
+    if (!metin.trim()) return;
 
-    const yeniKullaniciMesaji: Mesaj = { gonderen: "kullanici", metin: inputMetin };
+    const yeniKullaniciMesaji = { rol: "kullanici", icerik: metin };
     const guncelMesajlar = [...mesajlar, yeniKullaniciMesaji];
     setMesajlar(guncelMesajlar);
-    const gonderilenSoru = inputMetin;
-    setInputMetin("");
+    if (!gelenMetin) setInput("");
     setYukleniyor(true);
 
     setTimeout(() => {
-      let aiYaniti = "";
-      const metin = gonderilenSoru.toLowerCase();
-
-      if (metin.includes("soru hedefi") || metin.includes("haftalık") || metin.includes("soru gir")) {
-        const sayiBul = metin.match(/\d+/);
-        if (sayiBul) {
-          const miktar = sayiBul[0];
-          setAktifHedef(`${miktar} Soru`);
-          localStorage.setItem("lgs_haftalik_hedef_ai", `${miktar} Soru`);
-          aiYaniti = `Harika! Haftalık soru hedefini ${miktar} soru olarak kaydettim. Başka bir isteğin var mı?`;
-        } else {
-          aiYaniti = "Haftalık kaç soru hedefi koymamı istediğini sayı belirterek söyler misin?";
-        }
-      } else if (metin.includes("staj") || metin.includes("iş")) {
-        aiYaniti = "Staj yorgunluğunu anlıyorum. Eve gelince önce kısa bir mola verip en zor dersi aradan çıkarmanı öneririm.";
-      } else if (metin.includes("kim yaptı")) {
-        aiYaniti = "Bu siteyi ve akıllı takip sistemini sen ve ben birlikte inşa ettik!";
-      } else {
-        aiYaniti = `Dediklerini aldım: "${gonderilenSoru}". Bu konuda sana destek olmaya devam edeceğim!`;
-      }
-
-      setMesajlar([...guncelMesajlar, { gonderen: "ai", metin: aiYaniti }]);
+      const cevap = komutIsle(metin);
+      setMesajlar([...guncelMesajlar, { rol: "ai", icerik: cevap }]);
       setYukleniyor(false);
-      
-      // Yapay zeka yanıtını otomatik seslendir
-      sesliSoyle(aiYaniti);
-    }, 900);
+      sesliSoyle(cevap);
+    }, 800);
+  };
+
+  // SİTE İÇİNDEKİ HER ŞEYİ DEĞİŞTİREN AKILLI KOMUT MERKEZİ
+  const komutIsle = (komutMetni: string) => {
+    const k = komutMetni.toLowerCase();
+    let cevap = "";
+
+    // 1. Hedef Değiştirme Komutu (Örn: "hedefimi 700 yap")
+    if (k.includes("hedef") && (k.includes("yap") || k.includes("değiştir"))) {
+      const sayilar = k.match(/\d+/);
+      if (sayilar) {
+        const yeniHedef = sayilar[0];
+        localStorage.setItem("lgs_haftalik_hedef", yeniHedef);
+        setSiteVerileri(prev => ({ ...prev, hedef: Number(yeniHedef) }));
+        cevap = `✅ Harika! Haftalık hedefini başarıyla ${yeniHedef} soru olarak güncelledim.`;
+      } else {
+        cevap = "⚠️ Yeni hedef için bir sayı belirtmelisin (Örn: Hedefimi 600 yap).";
+      }
+    } 
+    // 2. Not Ekleme Komutu (Örn: "notlarıma ekle: fen tekrarı yap")
+    else if (k.includes("not") && (k.includes("ekle") || k.includes("yaz"))) {
+      const parca = komutMetni.split(/ekle:|yaz:/i);
+      const eklenecekNot = parca[1] ? parca[1].trim() : komutMetni;
+      const eskiNotlar = localStorage.getItem("lgs_notlar") || "";
+      const yeniNotlar = eskiNotlar + "\n- " + eklenecekNot;
+      localStorage.setItem("lgs_notlar", yeniNotlar);
+      setSiteVerileri(prev => ({ ...prev, notlar: yeniNotlar }));
+      cevap = `📝 Notlarına şu maddeyi ekledim: "${eklenecekNot}"`;
+    } 
+    // 3. Durum Sorgulama
+    else if (k.includes("durum") || k.includes("bilgi") || k.includes("istatistik")) {
+      cevap = `📊 Güncel Durumun:\n- İsmin: ${siteVerileri.isim}\n- Çözülen Soru: ${siteVerileri.cozulenSoru}\n- Haftalık Hedef: ${siteVerileri.hedef}`;
+    } 
+    // 4. Genel Motivasyon ve Sohbet
+    else {
+      cevap = `${siteVerileri.isim}, isteğini aldım! Çalışmalarını bu doğrultuda yönlendiriyorum. Başarılar dilerim!`;
+    }
+
+    return cevap;
   };
 
   return (
-    <div style={{ maxWidth: "850px", margin: "0 auto", color: "#f8fafc", fontFamily: "sans-serif", display: "flex", flexDirection: "column", height: "85vh" }}>
-      <h1 style={{ fontSize: "24px", fontWeight: "700", marginBottom: "6px" }}>🎙️ Sesli ve Akıllı Yapay Zeka Koçu</h1>
-      <p style={{ color: "#94a3b8", marginBottom: "20px", fontSize: "14px" }}>Mikrofona basarak konuşabilir, asistanın sana sesli yanıt vermesini sağlayabilirsin.</p>
-
-      {/* DURUM BİLGİ KARTI */}
-      <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", padding: "14px 20px", borderRadius: "12px", marginBottom: "15px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: "14px", color: "#94a3b8" }}>Haftalık Soru Hedefi:</span>
-        <span style={{ fontSize: "16px", fontWeight: "700", color: "#38bdf8" }}>{aktifHedef}</span>
+    <div style={{ color: "#f8fafc", maxWidth: "800px", margin: "0 auto", height: "calc(100vh - 80px)", display: "flex", flexDirection: "column", fontFamily: "sans-serif" }}>
+      <div style={{ background: "#111827", padding: "20px", borderRadius: "16px 16px 0 0", border: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <h1 style={{ margin: "0 0 4px 0", fontSize: "20px" }}>🤖 Tam Yetkili Yapay Zeka Koçu</h1>
+          <p style={{ color: "#94a3b8", margin: 0, fontSize: "13px" }}>Hedeflerini değiştirebilir, notlarını düzenleyebilir ve seni yönetebilir.</p>
+        </div>
+        <button 
+          onClick={() => setSesliOkuyor(!sesliOkuyor)}
+          style={{ background: sesliOkuyor ? "#16a34a" : "#374151", color: "#fff", border: "none", padding: "8px 12px", borderRadius: "8px", cursor: "pointer", fontSize: "12px" }}
+        >
+          {sesliOkuyor ? "🔊 Ses: Açık" : "🔇 Ses: Kapalı"}
+        </button>
       </div>
 
-      {/* SOHBET GEÇMİŞİ */}
-      <div style={{ flex: 1, background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "15px", marginBottom: "20px" }}>
-        {mesajlar.map((msg, index) => (
-          <div key={index} style={{ display: "flex", justifyContent: msg.gonderen === "kullanici" ? "flex-end" : "flex-start", alignItems: "center", gap: "8px" }}>
-            <div style={{ 
-              maxWidth: "75%", 
-              padding: "14px 18px", 
-              borderRadius: "14px", 
-              background: msg.gonderen === "kullanici" ? "#2563eb" : "#1e293b", 
-              color: "#fff", 
-              fontSize: "14px", 
-              lineHeight: "1.5"
-            }}>
-              {msg.metin}
-            </div>
-            {msg.gonderen === "ai" && (
-              <button 
-                onClick={() => sesliSoyle(msg.metin)} 
-                title="Sesli Dinle"
-                style={{ background: "#334155", border: "none", borderRadius: "50%", width: "32px", height: "32px", cursor: "pointer", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}
-              >
-                🔊
-              </button>
-            )}
+      <div style={{ flex: 1, background: "#0b0f19", border: "1px solid rgba(255,255,255,0.08)", borderTop: "none", padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "15px" }}>
+        {mesajlar.map((m, i) => (
+          <div key={i} style={{ alignSelf: m.rol === "kullanici" ? "flex-end" : "flex-start", maxWidth: "75%", background: m.rol === "kullanici" ? "#2563eb" : "#111827", padding: "12px 16px", borderRadius: "12px", border: m.rol === "ai" ? "1px solid rgba(255,255,255,0.08)" : "none", fontSize: "14px", lineHeight: "1.5", whiteSpace: "pre-line" }}>
+            {m.icerik}
           </div>
         ))}
         {yukleniyor && (
-          <div style={{ display: "flex", justifyContent: "flex-start" }}>
-            <div style={{ background: "#1e293b", padding: "12px 16px", borderRadius: "14px", color: "#94a3b8", fontSize: "13px" }}>
-              Asistan düşünüyor ve ses hazırlıyor... 💭
-            </div>
+          <div style={{ alignSelf: "flex-start", background: "#111827", padding: "10px 16px", borderRadius: "12px", color: "#94a3b8", fontSize: "13px" }}>
+            İşlem yapılıyor... ⚙️
           </div>
         )}
       </div>
 
-      {/* GİRİŞ ALANI VE MİKROFON */}
-      <form onSubmit={mesajGonder} style={{ display: "flex", gap: "10px" }}>
+      <form onSubmit={(e) => mesajGonder(e)} style={{ background: "#111827", padding: "15px", borderRadius: "0 0 16px 16px", border: "1px solid rgba(255,255,255,0.08)", display: "flex", gap: "10px", alignItems: "center" }}>
         <button 
           type="button" 
           onClick={sesliDinleBaslat}
-          style={{ padding: "0 16px", background: dinleniyor ? "#ef4444" : "#334155", color: "#fff", border: "none", borderRadius: "12px", cursor: "pointer", fontSize: "18px" }}
-          title="Sesli Konuş"
+          style={{ background: dinliyor ? "#dc2626" : "#2563eb", color: "#fff", border: "none", width: "45px", height: "45px", borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}
+          title="Konuşmak için tıkla"
         >
-          {dinleniyor ? "🔴 Dinleniyor..." : "🎤"}
+          {dinliyor ? "🔴" : "🎤"}
         </button>
 
         <input 
           type="text" 
-          value={inputMetin} 
-          onChange={(e) => setInputMetin(e.target.value)} 
-          placeholder="Yazarak veya mikrofona konuşarak komut ver..." 
-          style={{ flex: 1, padding: "14px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", color: "#fff", outline: "none", fontSize: "14px" }}
+          value={input} 
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Komut ver (Örn: Hedefimi 750 yap, Notlarıma ekle: Fen tekrarı)..."
+          style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #374151", background: "#1f2937", color: "#fff", outline: "none", fontSize: "14px" }}
         />
         
-        <button type="submit" style={{ padding: "0 24px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "12px", fontWeight: "600", cursor: "pointer" }}>
+        <button type="submit" style={{ padding: "12px 20px", background: "#2563eb", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }}>
           Gönder
         </button>
       </form>
